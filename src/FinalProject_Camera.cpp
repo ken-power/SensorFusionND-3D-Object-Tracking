@@ -288,13 +288,13 @@ int main(int argc, const char *argv[])
                 it1 != (dataBuffer.end() - 1)->bbMatches.end(); ++it1)
             {
                 // find bounding boxes associates with current match
-                BoundingBox *prevBB, *currBB;
+                BoundingBox *boundingBoxPreviousFrame, *boundingBoxCurrentFrame;
                 for(auto it2 = (dataBuffer.end() - 1)->boundingBoxes.begin();
                     it2 != (dataBuffer.end() - 1)->boundingBoxes.end(); ++it2)
                 {
                     if(it1->second == it2->boxID) // check wether current match partner corresponds to this BB
                     {
-                        currBB = &(*it2);
+                        boundingBoxCurrentFrame = &(*it2);
                     }
                 }
 
@@ -303,31 +303,36 @@ int main(int argc, const char *argv[])
                 {
                     if(it1->first == it2->boxID) // check wether current match partner corresponds to this BB
                     {
-                        prevBB = &(*it2);
+                        boundingBoxPreviousFrame = &(*it2);
                     }
                 }
 
                 // compute TTC for current match
-                if(currBB->lidarPoints.size() > 0 &&
-                   prevBB->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
+                if(boundingBoxCurrentFrame->lidarPoints.size() > 0 &&
+                   boundingBoxPreviousFrame->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
                 {
                     //// STUDENT ASSIGNMENT
                     //// TASK FP.2 -> compute time-to-collision based on Lidar data (implement -> computeTTCLidar)
                     double ttcLidar;
-                    computeTTCLidar(prevBB->lidarPoints, currBB->lidarPoints, sensorFrameRate, ttcLidar);
+                    computeTTCLidar(boundingBoxPreviousFrame->lidarPoints, boundingBoxCurrentFrame->lidarPoints, sensorFrameRate, ttcLidar);
                     //// EOF STUDENT ASSIGNMENT
 
                     //// STUDENT ASSIGNMENT
                     //// TASK FP.3 -> assign enclosed keypoint matches to bounding box (implement -> clusterKptMatchesWithROI)
                     //// TASK FP.4 -> compute time-to-collision based on camera (implement -> computeTTCCamera)
                     double ttcCamera;
-                    clusterKptMatchesWithROI(*currBB,
-                                             (dataBuffer.end() - 2)->keypoints,
-                                             (dataBuffer.end() - 1)->keypoints,
-                                             (dataBuffer.end() - 1)->kptMatches);
-                    computeTTCCamera((dataBuffer.end() - 2)->keypoints,
-                                     (dataBuffer.end() - 1)->keypoints,
-                                     currBB->kptMatches,
+                    vector<cv::KeyPoint> & keypointsPreviousFrame = (dataBuffer.end() - 2)->keypoints;
+                    vector<cv::KeyPoint> & keypointsCurrentFrame = (dataBuffer.end() - 1)->keypoints;
+                    vector<cv::DMatch> & keypointMatches = (dataBuffer.end() - 1)->kptMatches;
+
+                    clusterKptMatchesWithROI(*boundingBoxCurrentFrame,
+                                             keypointsPreviousFrame,
+                                             keypointsCurrentFrame,
+                                             keypointMatches);
+
+                    computeTTCCamera(keypointsPreviousFrame,
+                                     keypointsCurrentFrame,
+                                     boundingBoxCurrentFrame->kptMatches,
                                      sensorFrameRate,
                                      ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
@@ -336,10 +341,10 @@ int main(int argc, const char *argv[])
                     if(bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
-                        showLidarImgOverlay(visImg, currBB->lidarPoints, P_rect_00, R_rect_00, RT, &visImg);
+                        showLidarImgOverlay(visImg, boundingBoxCurrentFrame->lidarPoints, P_rect_00, R_rect_00, RT, &visImg);
                         cv::rectangle(visImg,
-                                      cv::Point(currBB->roi.x, currBB->roi.y),
-                                      cv::Point(currBB->roi.x + currBB->roi.width, currBB->roi.y + currBB->roi.height),
+                                      cv::Point(boundingBoxCurrentFrame->roi.x, boundingBoxCurrentFrame->roi.y),
+                                      cv::Point(boundingBoxCurrentFrame->roi.x + boundingBoxCurrentFrame->roi.width, boundingBoxCurrentFrame->roi.y + boundingBoxCurrentFrame->roi.height),
                                       cv::Scalar(0, 255, 0),
                                       2);
 
@@ -353,7 +358,7 @@ int main(int argc, const char *argv[])
                         cout << "Press key to continue to next frame" << endl;
                         cv::waitKey(0);
 
-//                        string imageFileName = string("../results/images/after/2_compute_lidar_ttc/image_" + to_string(imgIndex) + ".png");
+//                        string imageFileName = string("../results/images/after/3_compute_camera_ttc/image_" + to_string(imgIndex) + ".png");
 //                        cv::imwritemulti(imageFileName, visImg);
                     }
                     bVis = false;

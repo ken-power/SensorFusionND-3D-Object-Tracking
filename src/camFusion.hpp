@@ -16,9 +16,9 @@ void clusterLidarWithROI(std::vector<BoundingBox> & boundingBoxes,
                          cv::Mat & RT);
 
 void clusterKptMatchesWithROI(BoundingBox & boundingBox,
-                              std::vector<cv::KeyPoint> & kptsPrev,
-                              std::vector<cv::KeyPoint> & kptsCurr,
-                              std::vector<cv::DMatch> & kptMatches);
+                              std::vector<cv::KeyPoint> & keypointsPreviousFrame,
+                              std::vector<cv::KeyPoint> & keypointsCurrentFrame,
+                              std::vector<cv::DMatch> & keypointMatches);
 
 void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
                         std::map<int, int> & boundingBoxBestMatches,
