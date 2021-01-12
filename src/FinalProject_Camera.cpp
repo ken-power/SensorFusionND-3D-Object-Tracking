@@ -353,7 +353,7 @@ int main(int argc, const char *argv[])
                         cout << "Press key to continue to next frame" << endl;
                         cv::waitKey(0);
 
-//                        string imageFileName = string("../results/images/after/match_3d_objects/image_" + to_string(imgIndex) + ".png");
+//                        string imageFileName = string("../results/images/after/2_compute_lidar_ttc/image_" + to_string(imgIndex) + ".png");
 //                        cv::imwritemulti(imageFileName, visImg);
                     }
                     bVis = false;

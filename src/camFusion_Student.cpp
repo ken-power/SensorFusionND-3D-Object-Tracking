@@ -163,10 +163,40 @@ void computeTTCCamera(std::vector<cv::KeyPoint> & kptsPrev, std::vector<cv::KeyP
 }
 
 
-void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPrev,
-                     std::vector<LidarPoint> & lidarPointsCurr, double frameRate, double & TTC)
+void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
+                     std::vector<LidarPoint> & lidarPointsCurrentFrame,
+                     double frameRate,
+                     double & TTC)
 {
-    // ...
+    std::cout << "Lidar Previous Frame: " << lidarPointsPreviousFrame.size() << " points" << "\t Lidar Current Frame: " << lidarPointsCurrentFrame.size() << " points" << std::endl;
+
+    // auxiliary variables
+    double dT = 0.1 / frameRate;        // time between two measurements in seconds
+    double laneWidth = 4.0; // assumed width of the ego lane
+
+    // find closest distance to Lidar points within ego lane
+    double minXPrev = 1e9, minXCurr = 1e9;
+
+    for (auto it = lidarPointsPreviousFrame.begin(); it != lidarPointsPreviousFrame.end(); ++it)
+    {
+        if (abs(it->y) <= laneWidth / 2.0)
+        { // 3D point within ego lane?
+            minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        }
+    }
+
+    for (auto it = lidarPointsCurrentFrame.begin(); it != lidarPointsCurrentFrame.end(); ++it)
+    {
+        if (abs(it->y) <= laneWidth / 2.0)
+        { // 3D point within ego lane?
+            minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        }
+    }
+
+    std::cout << "Final minXPrev: " << minXPrev << "\t Final minXCurr: " << minXCurr << std::endl;
+
+    // compute TTC from both measurements
+    TTC = minXCurr * dT / (minXPrev - minXCurr);
 }
 
 
