@@ -21,9 +21,9 @@ void clusterKptMatchesWithROI(BoundingBox & boundingBox,
                               std::vector<cv::DMatch> & kptMatches);
 
 void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
-                        std::map<int, int> & bbBestMatches,
-                        DataFrame & prevFrame,
-                        DataFrame & currFrame);
+                        std::map<int, int> & boundingBoxBestMatches,
+                        DataFrame & previousFrame,
+                        DataFrame & currentFrame);
 
 void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize, cv::Size imageSize, bool bWait = true);
 

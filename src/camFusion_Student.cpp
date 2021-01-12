@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <unordered_map>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -137,6 +138,10 @@ void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize,
     {
         cv::waitKey(0); // wait for key to be pressed
     }
+
+//    static int imageCount = 0;
+//    string outputFilename = string("../results/images/before/") + string("image") + to_string(imageCount++) + string(".png");
+//    cv::imwrite(outputFilename, topviewImg);
 }
 
 
@@ -166,9 +171,68 @@ void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPrev,
 
 
 void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
-                        std::map<int, int> & bbBestMatches,
-                        DataFrame & prevFrame,
-                        DataFrame & currFrame)
+                        std::map<int, int> & boundingBoxBestMatches,
+                        DataFrame & previousFrame,
+                        DataFrame & currentFrame)
 {
-    // ...
+    std::multimap<int, int> boundingBoxMatches {};  // A pair of IDs to track bounding boxes
+
+    for (auto match : matches)
+    {
+        cv::KeyPoint keypointsPreviousFrame = previousFrame.keypoints[match.queryIdx];
+        cv::KeyPoint keypointsCurrentFrame = currentFrame.keypoints[match.trainIdx];
+
+        unsigned int boxIdPreviousFrame;
+        unsigned int boxIdCurrentFrame;
+
+        for (auto & boundingBox : previousFrame.boundingBoxes)
+        {
+            if (boundingBox.roi.contains(keypointsPreviousFrame.pt))
+            {
+                boxIdPreviousFrame = boundingBox.boxID;
+            }
+        }
+
+        for (auto & boundingBox : currentFrame.boundingBoxes)
+        {
+            if (boundingBox.roi.contains(keypointsCurrentFrame.pt))
+            {
+                boxIdCurrentFrame = boundingBox.boxID;
+            }
+        }
+
+        boundingBoxMatches.insert({boxIdCurrentFrame, boxIdPreviousFrame});
+    }
+
+    vector<int> boundingBoxIdsCurrentFrame {};
+
+    for (auto boundingBox : currentFrame.boundingBoxes)
+    {
+        boundingBoxIdsCurrentFrame.push_back(boundingBox.boxID);
+    }
+
+    for (int boxIdCurrentFrame : boundingBoxIdsCurrentFrame)
+    {
+        auto it = boundingBoxMatches.equal_range(boxIdCurrentFrame);
+        unordered_map<int, int> boundingBoxIdMatches;
+        for (auto itr = it.first; itr != it.second; ++itr)
+        {
+            boundingBoxIdMatches[itr->second]++;
+        }
+
+        // find the max frequency
+        unsigned int maxBoxID = 0;
+        int matchingBoxID = -1;
+
+        for (auto boxIdMatch : boundingBoxIdMatches)
+        {
+            if (maxBoxID < boxIdMatch.second)
+            {
+                matchingBoxID = boxIdMatch.first;
+                maxBoxID = boxIdMatch.second;
+            }
+        }
+
+        boundingBoxBestMatches.insert({matchingBoxID, boxIdCurrentFrame});
+    }
 }

@@ -265,16 +265,18 @@ int main(int argc, const char *argv[])
 
             //// STUDENT ASSIGNMENT
             //// TASK FP.1 -> match list of 3D objects (vector<BoundingBox>) between current and previous frame (implement ->matchBoundingBoxes)
-            map<int, int> bbBestMatches;
+            map<int, int> boundingBoxBestMatches;
+            DataFrame & previousFrame = *(dataBuffer.end() - 2);
+            DataFrame & currentFrame = *(dataBuffer.end() - 1);
+
             matchBoundingBoxes(matches,
-                               bbBestMatches,
-                               *(dataBuffer.end() - 2),
-                               *(dataBuffer.end() -
-                                 1)); // associate bounding boxes between current and previous frame using keypoint matches
+                               boundingBoxBestMatches,
+                               previousFrame,
+                               currentFrame); // associate bounding boxes between current and previous frame using keypoint matches
             //// EOF STUDENT ASSIGNMENT
 
             // store matches in current data frame
-            (dataBuffer.end() - 1)->bbMatches = bbBestMatches;
+            (dataBuffer.end() - 1)->bbMatches = boundingBoxBestMatches;
 
             cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
 
@@ -350,6 +352,9 @@ int main(int argc, const char *argv[])
                         cv::imshow(windowName, visImg);
                         cout << "Press key to continue to next frame" << endl;
                         cv::waitKey(0);
+
+//                        string imageFileName = string("../results/images/after/match_3d_objects/image_" + to_string(imgIndex) + ".png");
+//                        cv::imwritemulti(imageFileName, visImg);
                     }
                     bVis = false;
 
