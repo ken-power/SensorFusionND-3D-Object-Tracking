@@ -298,7 +298,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
 {
     std::multimap<int, int> boundingBoxMatches{};  // A pair of IDs to track bounding boxes
 
-    for(auto match : matches)
+    for(const auto & match : matches)
     {
         cv::KeyPoint keypointsPreviousFrame = previousFrame.keypoints[match.queryIdx];
         cv::KeyPoint keypointsCurrentFrame = currentFrame.keypoints[match.trainIdx];
@@ -306,7 +306,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
         unsigned int boxIdPreviousFrame;
         unsigned int boxIdCurrentFrame;
 
-        for(auto & boundingBox : previousFrame.boundingBoxes)
+        for(const auto & boundingBox : previousFrame.boundingBoxes)
         {
             if(boundingBox.roi.contains(keypointsPreviousFrame.pt))
             {
@@ -314,7 +314,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
             }
         }
 
-        for(auto & boundingBox : currentFrame.boundingBoxes)
+        for(const auto & boundingBox : currentFrame.boundingBoxes)
         {
             if(boundingBox.roi.contains(keypointsCurrentFrame.pt))
             {
@@ -327,12 +327,12 @@ void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
 
     vector<int> boundingBoxIdsCurrentFrame{};
 
-    for(auto boundingBox : currentFrame.boundingBoxes)
+    for(const auto & boundingBox : currentFrame.boundingBoxes)
     {
         boundingBoxIdsCurrentFrame.push_back(boundingBox.boxID);
     }
 
-    for(int boxIdCurrentFrame : boundingBoxIdsCurrentFrame)
+    for(const int boxIdCurrentFrame : boundingBoxIdsCurrentFrame)
     {
         auto it = boundingBoxMatches.equal_range(boxIdCurrentFrame);
         unordered_map<int, int> boundingBoxIdMatches;
@@ -345,7 +345,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
         unsigned int maxBoxID = 0;
         int matchingBoxID = -1;
 
-        for(auto boxIdMatch : boundingBoxIdMatches)
+        for(const auto & boxIdMatch : boundingBoxIdMatches)
         {
             if(maxBoxID < boxIdMatch.second)
             {
