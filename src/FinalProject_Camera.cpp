@@ -242,7 +242,7 @@ int main(int argc, const char *argv[])
                       (dataBuffer.end() - 1)->cameraImg,
                       descriptors,
                       descriptorType);
-        results.descriptor = detectorType;
+        results.descriptor = descriptorType;
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
@@ -396,11 +396,12 @@ int main(int argc, const char *argv[])
 void DisplayResultsTable(PerformanceResults results)
 {
     const string separator = " | ";
-    cout << "Performance Results" << endl;
-    cout << "Detector = " << results.detector << endl;
-    cout << "Descriptor = " << results.descriptor << endl;
+    cout << "\nPerformance Results" << endl;
+    cout << "* Detector = " << results.detector << endl;
+    cout << "* Descriptor = " << results.descriptor << endl << endl;
 
     cout << "Frame" << separator << "Lidar points" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
+    cout << "---: " << separator << "---: " << separator << "---: " << separator << "---: " << endl;
 
     for(const auto & result : results.data)
     {
