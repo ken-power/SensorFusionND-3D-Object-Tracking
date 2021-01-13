@@ -269,10 +269,11 @@ int main(int argc, const char *argv[])
             DataFrame & previousFrame = *(dataBuffer.end() - 2);
             DataFrame & currentFrame = *(dataBuffer.end() - 1);
 
+            // associate bounding boxes between current and previous frame using keypoint matches
             matchBoundingBoxes(matches,
                                boundingBoxBestMatches,
                                previousFrame,
-                               currentFrame); // associate bounding boxes between current and previous frame using keypoint matches
+                               currentFrame);
             //// EOF STUDENT ASSIGNMENT
 
             // store matches in current data frame
