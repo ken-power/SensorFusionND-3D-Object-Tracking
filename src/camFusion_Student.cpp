@@ -143,7 +143,8 @@ void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize,
     }
 
     static int imageCount = 0;
-    string outputFilename = string("../results/images/lidar_top_view/") + string("image_") + to_string(imageCount++) + string(".png");
+    string outputFilename =
+            string("../results/images/lidar_top_view/") + string("image_") + to_string(imageCount++) + string(".png");
     cv::imwrite(outputFilename, topviewImg);
 }
 
@@ -261,33 +262,31 @@ void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
                      double frameRate,
                      double & TTC)
 {
-    // auxiliary variables
-    double dT = 0.1 / frameRate;        // time between two measurements in seconds
-    double laneWidth = 4.0; // assumed width of the ego lane
+    // Sort ascending on the x coordinate only
+    std::sort(lidarPointsPreviousFrame.begin(), lidarPointsPreviousFrame.end(), [](LidarPoint a, LidarPoint b) {
+                  return a.x < b.x;
+              }
+    );
 
-    // find closest distance to Lidar points within ego lane
-    double minXPrev = 1e9, minXCurr = 1e9;
+    std::sort(lidarPointsCurrentFrame.begin(), lidarPointsCurrentFrame.end(), [](LidarPoint a, LidarPoint b) {
+                  return a.x < b.x;
+              }
+    );
 
-    for(auto it = lidarPointsPreviousFrame.begin(); it != lidarPointsPreviousFrame.end(); ++it)
-    {
-        if(abs(it->y) <= laneWidth / 2.0)
-        { // 3D point within ego lane?
-            minXPrev = minXPrev > it->x ? it->x : minXPrev;
-        }
-    }
+    /**
+     Using the constant-velocity model (as opposed to a constant-acceleration model)
+     TTC = d1 * delta_t / (d0 - d1)
+     where: d0 is the previous frame's closing distance (front-to-rear bumper)
+            d1 is the current frame's closing distance (front-to-rear bumper)
+            delta_t is the time elapsed between images (1 / frameRate)
+     Note: this function does not take into account the distance from the lidar origin to the front bumper of our vehicle.
+     It also does not account for the curvature or protrusions from the rear bumper of the preceding vehicle.
+    */
+    double d0 = lidarPointsPreviousFrame[lidarPointsPreviousFrame.size() / 2].x;
+    double d1 = lidarPointsCurrentFrame[lidarPointsCurrentFrame.size() / 2].x;
+    double delta_t = 1.0 / frameRate;
 
-    for(auto it = lidarPointsCurrentFrame.begin(); it != lidarPointsCurrentFrame.end(); ++it)
-    {
-        if(abs(it->y) <= laneWidth / 2.0)
-        { // 3D point within ego lane?
-            minXCurr = minXCurr > it->x ? it->x : minXCurr;
-        }
-    }
-
-    std::cout << "Final minXPrev: " << minXPrev << "\t Final minXCurr: " << minXCurr << std::endl;
-
-    // compute TTC from both measurements
-    TTC = minXCurr * dT / (minXPrev - minXCurr);
+    TTC = d1 * delta_t / (d0 - d1);
 }
 
 
