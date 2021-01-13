@@ -22,6 +22,8 @@
 
 void DisplayResultsTable(PerformanceResults results);
 
+void DisplayImagesTable(PerformanceResults results);
+
 using namespace std;
 
 /* MAIN PROGRAM */
@@ -347,7 +349,7 @@ int main(int argc, const char *argv[])
                                      ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
 
-                    bVis = false;
+                    bVis = true;
                     if(bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
@@ -364,12 +366,12 @@ int main(int argc, const char *argv[])
 
                         string windowName = "Final Results : TTC";
                         cv::namedWindow(windowName, 4);
-                        cv::imshow(windowName, visImg);
-                        cout << "Press key to continue to next frame" << endl;
-                        cv::waitKey(0);
+//                        cv::imshow(windowName, visImg);
+//                        cout << "Press key to continue to next frame" << endl;
+//                        cv::waitKey(0);
 
-//                        string imageFileName = string("../results/images/after/3_compute_camera_ttc/image_" + to_string(imgIndex) + ".png");
-//                        cv::imwritemulti(imageFileName, visImg);
+                        string imageFileName = string("../results/images/lidar_camera_ttc_combined/ttc_" + results.detector + "_" + results.descriptor + "_image_" + to_string(imgIndex) + ".png");
+                        cv::imwritemulti(imageFileName, visImg);
                     }
                     bVis = false;
 
@@ -379,16 +381,13 @@ int main(int argc, const char *argv[])
                     result.lidarPoints = currentFrame.lidarPoints.size();
 
                     results.data.push_back(result);
-
-
                 } // eof TTC computation
-            } // eof loop over all BB matches            
-
+            } // eof loop over all BB matches
         }
-
     } // eof loop over all images
 
     DisplayResultsTable(results);
+    DisplayImagesTable(results);
 
     return 0;
 }
@@ -406,5 +405,27 @@ void DisplayResultsTable(PerformanceResults results)
     for(const auto & result : results.data)
     {
         cout << result.frame << separator << result.lidarPoints << separator << result.ttcLidar << separator << result.ttcCamera << endl;
+    }
+}
+
+void DisplayImagesTable(PerformanceResults results)
+{
+    string imageFileNameLidarTTC;
+    string imageFileNameCameraTTC;
+
+    const string separator = " | ";
+    cout << "\nPerformance Results" << endl;
+    cout << "* Detector = " << results.detector << endl;
+    cout << "* Descriptor = " << results.descriptor << endl << endl;
+
+    cout << "Frame" << separator << "Top view perspective of Lidar points showing distance markers" << separator << "Image with TTC estimates from Lidar and Camera" << separator << "Lidar points" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
+    cout << ":---: " << separator << ":---: " << separator << ":---: " << separator << "---: " << separator << "---: " << separator << "---: " << endl;
+
+    for(const auto & result : results.data)
+    {
+        imageFileNameLidarTTC = string("results/images/lidar_top_view/image_" + to_string(result.frame) + ".png");
+        imageFileNameCameraTTC = string("results/images/lidar_camera_ttc_combined/ttc_" + results.detector + "_" + results.descriptor + "_image_" + to_string(result.frame) + ".png");
+
+        cout << result.frame << separator << "![](" << imageFileNameLidarTTC << ")" << separator << "![](" << imageFileNameCameraTTC << ")" << separator << result.lidarPoints << separator << result.ttcLidar << separator << result.ttcCamera << endl;
     }
 }

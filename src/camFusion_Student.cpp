@@ -129,10 +129,10 @@ void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize,
         cv::line(topviewImg, cv::Point(0, y), cv::Point(imageSize.width, y), cv::Scalar(255, 0, 0));
     }
 
+    // display image
+    string windowName = "3D Objects";
     if(false)
     {
-        // display image
-        string windowName = "3D Objects";
         cv::namedWindow(windowName, 1);
         cv::imshow(windowName, topviewImg);
     }
@@ -142,9 +142,9 @@ void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize,
         cv::waitKey(0); // wait for key to be pressed
     }
 
-//    static int imageCount = 0;
-//    string outputFilename = string("../results/images/before/") + string("image") + to_string(imageCount++) + string(".png");
-//    cv::imwrite(outputFilename, topviewImg);
+    static int imageCount = 0;
+    string outputFilename = string("../results/images/lidar_top_view/") + string("image_") + to_string(imageCount++) + string(".png");
+    cv::imwrite(outputFilename, topviewImg);
 }
 
 
