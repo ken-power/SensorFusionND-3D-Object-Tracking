@@ -20,6 +20,8 @@
 #include "lidarData.hpp"
 #include "camFusion.hpp"
 
+void DisplayResultsTable(PerformanceResults results);
+
 using namespace std;
 
 /* MAIN PROGRAM */
@@ -107,6 +109,11 @@ int main(int argc, const char *argv[])
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
 
+
+    // Track the results
+    ResultLineItem result;
+    PerformanceResults results;
+
     /* MAIN LOOP OVER ALL IMAGES */
 
     for(size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex += imgStepWidth)
@@ -178,7 +185,7 @@ int main(int argc, const char *argv[])
         bVis = true;
         if(bVis)
         {
-            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
+            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), false);
         }
         bVis = false;
 
@@ -197,6 +204,7 @@ int main(int argc, const char *argv[])
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
         string detectorType = "SHITOMASI";
+        results.detector = detectorType;
 
         if(detectorType.compare("SHITOMASI") == 0)
         {
@@ -234,6 +242,7 @@ int main(int argc, const char *argv[])
                       (dataBuffer.end() - 1)->cameraImg,
                       descriptors,
                       descriptorType);
+        results.descriptor = detectorType;
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
@@ -338,7 +347,7 @@ int main(int argc, const char *argv[])
                                      ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
 
-                    bVis = true;
+                    bVis = false;
                     if(bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
@@ -364,6 +373,14 @@ int main(int argc, const char *argv[])
                     }
                     bVis = false;
 
+                    result.frame = imgIndex;
+                    result.ttcLidar = ttcLidar;
+                    result.ttcCamera = ttcCamera;
+                    result.lidarPoints = currentFrame.lidarPoints.size();
+
+                    results.data.push_back(result);
+
+
                 } // eof TTC computation
             } // eof loop over all BB matches            
 
@@ -371,5 +388,22 @@ int main(int argc, const char *argv[])
 
     } // eof loop over all images
 
+    DisplayResultsTable(results);
+
     return 0;
+}
+
+void DisplayResultsTable(PerformanceResults results)
+{
+    const string separator = " | ";
+    cout << "Performance Results" << endl;
+    cout << "Detector = " << results.detector << endl;
+    cout << "Descriptor = " << results.descriptor << endl;
+
+    cout << "Frame" << separator << "Lidar points" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
+
+    for(const auto & result : results.data)
+    {
+        cout << result.frame << separator << result.lidarPoints << separator << result.ttcLidar << separator << result.ttcCamera << endl;
+    }
 }

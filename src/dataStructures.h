@@ -40,4 +40,24 @@ struct DataFrame
     std::map<int, int> bbMatches; // bounding box matches between previous and current frame
 };
 
+
+struct ResultLineItem
+{
+    ResultLineItem() = default;
+    unsigned int frame = 0;
+    double ttcLidar = 0.0;
+    double ttcCamera = 0.0;
+    unsigned int lidarPoints = 0;
+
+};
+
+struct PerformanceResults
+{
+    PerformanceResults() = default;
+    std::string detector = "";
+    std::string descriptor = "";
+    std::vector<ResultLineItem> data;
+};
+
+
 #endif /* dataStructures_h */

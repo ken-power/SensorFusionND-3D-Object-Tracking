@@ -129,10 +129,13 @@ void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize,
         cv::line(topviewImg, cv::Point(0, y), cv::Point(imageSize.width, y), cv::Scalar(255, 0, 0));
     }
 
-    // display image
-    string windowName = "3D Objects";
-    cv::namedWindow(windowName, 1);
-    cv::imshow(windowName, topviewImg);
+    if(false)
+    {
+        // display image
+        string windowName = "3D Objects";
+        cv::namedWindow(windowName, 1);
+        cv::imshow(windowName, topviewImg);
+    }
 
     if(bWait)
     {
@@ -258,9 +261,6 @@ void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
                      double frameRate,
                      double & TTC)
 {
-    std::cout << "Lidar Previous Frame: " << lidarPointsPreviousFrame.size() << " points" << "\t Lidar Current Frame: "
-              << lidarPointsCurrentFrame.size() << " points" << std::endl;
-
     // auxiliary variables
     double dT = 0.1 / frameRate;        // time between two measurements in seconds
     double laneWidth = 4.0; // assumed width of the ego lane
