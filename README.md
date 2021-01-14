@@ -360,12 +360,26 @@ The Lidar sensor in the following scenario (image courtesy of Udacity) gives the
 
 ![](images/Lidar_ttc_illustration.png)
 
-
 Based on the constant-velocity model, the velocity `v0` can be calculated from two successive Lidar measurements as follows  (image courtesy of Udacity):
 
 ![](images/Lidar_ttc_calculation.png)
 
 Once the relative velocity `v0` is known, the time to collision can easily be computed by dividing the remaining distance between both vehicles by `v0`.
+
+The following table shows a set of manual calculations, based on an estimate of the distance to the rear of the preceding vehicle. It also shows manually estimating the distance to the rear of the preceding vehicle from a top view perspective of the Lidar points.
+
+![](results/Lidar_TTC_Manual_Calculations.png)
+
+The calculations are in the [results spreadsheet](results/results.xlsx). The top view perspectives of the Lidar points for each frame are shown below, and in the [Image Results markdown file](ImageResults.md). These are used to estimate the distance to the preceding vehicle in each frame.
+
+A graph of `v0` shows the velocity per frame:
+
+![](results/v0_manual_estiamtes.png)
+
+The negative velocities in frames 12 and 17 could mean the vehicle is moving backwards, but that is unlikely given that it is just one frame each time. There could be deceleration happening in general from around frame 10, which makes sense if the vehicle is approaching a red light.
+
+##### After sorting the lidar points on closing distance (front-to-rear bumper)
+
 
 This is implemented in the `computeTTCLidar` in [camFusion_Student.cpp](src/camFusion_Student.cpp):
 
@@ -406,10 +420,6 @@ void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
     TTC = d1 * dt / (d0 - d1);
 }
 ```
-
-
-
-##### After sorting the lidar points on closing distance (front-to-rear bumper)
 
 Sorting the lidar points on the x dimension before calculating the TTC produces a much better result, as can be seen in the next table.
 
