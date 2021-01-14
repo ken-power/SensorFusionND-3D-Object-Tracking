@@ -306,6 +306,86 @@ void computeTTCCamera(std::vector<cv::KeyPoint> & kptsPrev,
 # Performance Evaluation
 
 ## Performance Evaluation 1
+### Goal
+This exercise is about conducting tests with the final project code, especially with regard to the Lidar part. Look for several examples where you have the impression that the Lidar-based TTC estimate is way off. Once you have found those, describe your observations and provide a sound argumentation why you think this happened.
+
+The task is complete once several examples (2-3) have been identified and described in detail. The assertion that the TTC is off should be based on manually estimating the distance to the rear of the preceding vehicle from a top view perspective of the Lidar points.
+
+### Response
+
+#### Traffic light is red
+One immediate factor that is evident from the camera images is the vehicles are facing a red light, which means the preceding vehicles are likely either already stopped at the red light, or slowing to a stop as they approach the red light. Hence, TTC should not be very large, and we should look out for large TTC estimates. 
+
+![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_1.png)
+
+#### Sort the lidar points
+The first implementation of `computeTTCLidar` did not sort the lidar points. This resulted in the majority of Lidar TTC estaimtes looking way off. These results can be seen in the following table.  
+
+##### Before sorting the lidar points on x
+
+Frame | Lidar points | TTC Lidar | TTC Camera
+---:  | ---:  | ---:  | ---: 
+1 | 340 | 9.99495 | 15.3278
+2 | 309 | 46.9361 | 12.7634
+3 | 326 | 8.76554 | 13.5261
+4 | 322 | 13.9876 | 13.81
+5 | 344 | 28.9112 | 13.0276
+6 | 352 | 15.5119 | 11.426
+7 | 317 | 40.7209 | 12.8408
+8 | 312 | 7.13085 | 13.9921
+9 | 311 | 8.57043 | 11.274
+10 | 286 | 8.09783 | 35.585
+11 | 302 | -43.923 | 12.7762
+12 | 302 | 5.97072 | 11.5836
+13 | 316 | 48.8604 | 11.4876
+14 | 312 | 8.62499 | 12.2294
+15 | 289 | 6.14571 | 10.225
+16 | 297 | 6.82135 | 10.6857
+17 | 279 | 702.551 | 10.0052
+18 | 303 | 9.26663 | 10.5152
+
+The following table shows the Lidar TTC estimates side-by-side with the Lidar top view perspective. Each marker in the top view perspective image is 2m. Clearly, the car detected in the image in frame 2 is not 46.9361 seconds away. It is approximately 8 metres away. The image in frame 17 shows an extreme example, where the Lidar TTC is 702.551 seconds, while the image shows the preceding vehicle is actually closer to 7 metres away. 
+
+# TODO
+# TODO: Manual calculations of TTC based on distance
+# TODO
+
+Frame | Top view perspective of Lidar points showing distance markers | Image with TTC estimates from Lidar and Camera | Lidar points | TTC Lidar | TTC Camera
+:---:  | :---:  | :---:  | ---:  | ---:  | ---: 
+2 | ![](results/images/lidar_top_view/image_2.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_2.png) | 309 | 46.9361 | 12.7634
+4 | ![](results/images/lidar_top_view/image_4.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_4.png) | 322 | 13.9876 | 13.81
+6 | ![](results/images/lidar_top_view/image_6.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_6.png) | 352 | 15.5119 | 11.426
+7 | ![](results/images/lidar_top_view/image_7.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_7.png) | 317 | 40.7209 | 12.8408
+11 | ![](results/images/lidar_top_view/image_11.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_11.png) | 302 | -43.923 | 12.7762
+17 | ![](results/images/lidar_top_view/image_17.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_17.png) | 279 | 702.551 | 10.0052
+
+
+##### After sorting the lidar points on x
+
+Sorting the lidar points on the x dimension before calculating the TTC produces a much better result, as can be seen in the next table.
+
+Frame | Lidar points | TTC Lidar | TTC Camera
+---:  | ---:  | ---:  | ---: 
+1 | 340 | 12.5156 | 15.3278
+2 | 309 | 12.6142 | 12.7634
+3 | 326 | 14.091 | 13.5261
+4 | 322 | 16.6894 | 13.81
+5 | 344 | 15.9082 | 13.0276
+6 | 352 | 12.6787 | 11.426
+7 | 317 | 11.9844 | 12.8408
+8 | 312 | 13.1241 | 13.9921
+9 | 311 | 13.0241 | 11.274
+10 | 286 | 11.1746 | 35.585
+11 | 302 | 12.8086 | 12.7762
+12 | 302 | 8.95978 | 11.5836
+13 | 316 | 9.96439 | 11.4876
+14 | 312 | 9.59863 | 12.2294
+15 | 289 | 8.57352 | 10.225
+16 | 297 | 9.51617 | 10.6857
+17 | 279 | 9.54658 | 10.0052
+18 | 303 | 8.3988 | 10.5152
+
+
 
 ## Performance Evaluation 2
 
