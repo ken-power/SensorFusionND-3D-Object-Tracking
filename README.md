@@ -321,7 +321,7 @@ One immediate factor that is evident from the camera images is the vehicles are 
 #### Sort the lidar points
 The first implementation of `computeTTCLidar` did not sort the lidar points. This resulted in the majority of Lidar TTC estaimtes looking way off. These results can be seen in the following table.  
 
-##### Before sorting the lidar points on x
+##### Before sorting the lidar points
 
 Frame | Lidar points | TTC Lidar | TTC Camera
 ---:  | ---:  | ---:  | ---: 
@@ -344,11 +344,7 @@ Frame | Lidar points | TTC Lidar | TTC Camera
 17 | 279 | 702.551 | 10.0052
 18 | 303 | 9.26663 | 10.5152
 
-The following table shows the Lidar TTC estimates side-by-side with the Lidar top view perspective. Each marker in the top view perspective image is 2m. Clearly, the car detected in the image in frame 2 is not 46.9361 seconds away. It is approximately 8 metres away. The image in frame 17 shows an extreme example, where the Lidar TTC is 702.551 seconds, while the image shows the preceding vehicle is actually closer to 7 metres away. 
-
-# TODO
-# TODO: Manual calculations of TTC based on distance
-# TODO
+The following table shows the Lidar TTC estimates side-by-side with the Lidar top view perspective. Each marker in the top view perspective image is 2m. Clearly, the car detected in the image in frame 2 is not 46.9361 seconds away. It is approximately 8 metres away. The image in frame 17 shows an extreme example, where the Lidar TTC is 702.551 seconds, while the image shows the preceding vehicle is actually closer to 7 metres away.
 
 Frame | Top view perspective of Lidar points showing distance markers | Image with TTC estimates from Lidar and Camera | Lidar points | TTC Lidar | TTC Camera
 :---:  | :---:  | :---:  | ---:  | ---:  | ---: 
@@ -360,7 +356,60 @@ Frame | Top view perspective of Lidar points showing distance markers | Image wi
 17 | ![](results/images/lidar_top_view/image_17.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_17.png) | 279 | 702.551 | 10.0052
 
 
-##### After sorting the lidar points on x
+The Lidar sensor in the following scenario (image courtesy of Udacity) gives the distance to the closest 3D point in the path of driving. In the figure below, the closest point is indicated by a red line emanating from a Lidar sensor on top of the measuring vehicle.
+
+![](images/Lidar_ttc_illustration.png)
+
+
+Based on the constant-velocity model, the velocity `v0` can be calculated from two successive Lidar measurements as follows  (image courtesy of Udacity):
+
+![](images/Lidar_ttc_calculation.png)
+
+Once the relative velocity `v0` is known, the time to collision can easily be computed by dividing the remaining distance between both vehicles by `v0`.
+
+This is implemented in the `computeTTCLidar` in [camFusion_Student.cpp](src/camFusion_Student.cpp):
+
+```c++
+void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
+                     std::vector<LidarPoint> & lidarPointsCurrentFrame,
+                     double frameRate,
+                     double & TTC)
+{
+    // Sort ascending on the x coordinate only
+    std::sort(lidarPointsPreviousFrame.begin(), lidarPointsPreviousFrame.end(), [](LidarPoint a, LidarPoint b) {
+        return a.x < b.x;
+    }
+    );
+    
+    std::sort(lidarPointsCurrentFrame.begin(), lidarPointsCurrentFrame.end(), [](LidarPoint a, LidarPoint b) {
+        return a.x < b.x;
+    }
+    );
+    
+    /**
+     Using the constant-velocity model (as opposed to a constant-acceleration model)
+    
+            TTC = d1 * dt / (d0 - d1);
+    
+     where:
+            d0: the previous frame's closing distance (front-to-rear bumper)
+            d1: the current frame's closing distance (front-to-rear bumper)
+            dt: (delta t) the time elapsed between images (1 / frameRate)
+    
+     Note: this function does not take into account the distance from the lidar origin to the front bumper of our vehicle.
+     It also does not account for the curvature or protrusions from the rear bumper of the preceding vehicle.
+    */
+    double d0 = lidarPointsPreviousFrame[lidarPointsPreviousFrame.size() / 2].x;
+    double d1 = lidarPointsCurrentFrame[lidarPointsCurrentFrame.size() / 2].x;
+    double dt = 1.0 / frameRate;
+    
+    TTC = d1 * dt / (d0 - d1);
+}
+```
+
+
+
+##### After sorting the lidar points on closing distance (front-to-rear bumper)
 
 Sorting the lidar points on the x dimension before calculating the TTC produces a much better result, as can be seen in the next table.
 
@@ -386,7 +435,6 @@ Frame | Lidar points | TTC Lidar | TTC Camera
 18 | 303 | 8.3988 | 10.5152
 
 
-
 ## Performance Evaluation 2
 
 
@@ -408,7 +456,7 @@ Frame | Lidar points | TTC Lidar | TTC Camera
   * Linux: gcc / g++ is installed by default on most Linux distros
   * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
   * Windows: recommend using [MinGW](http://www.mingw.org/)
-
+  
 ## Basic Build Instructions
 
 1. Clone this repo.
@@ -417,4 +465,4 @@ Frame | Lidar points | TTC Lidar | TTC Camera
 4. Run it: `./3D_object_tracking`.
 
 # References
-
+* Rangesh, A. and Trivedi, M.M., 2019. [_No blind spots: Full-surround multi-object tracking for autonomous vehicles using cameras and lidars_](https://arxiv.org/pdf/1802.08755). IEEE Transactions on Intelligent Vehicles, 4(4), pp.588-599.
