@@ -1,3 +1,7 @@
+Performance Results
+* Detector = SHITOMASI
+* Descriptor = BRISK
+
 Frame | Top view perspective of Lidar points showing distance markers | Image with TTC estimates from Lidar and Camera | Lidar points | TTC Lidar | TTC Camera
 :---:  | :---:  | :---:  | ---:  | ---:  | ---: 
 1 | ![](results/images/lidar_top_view/image_1.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_1.png) | 340 | 12.5156 | 15.3278
