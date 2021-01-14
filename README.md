@@ -313,12 +313,12 @@ The task is complete once several examples (2-3) have been identified and descri
 
 ### Response
 
-#### Traffic light is red
+#### Observation 1: Traffic light is red
 One immediate factor that is evident from the camera images is the vehicles are facing a red light, which means the preceding vehicles are likely either already stopped at the red light, or slowing to a stop as they approach the red light. Hence, TTC should not be very large, and we should look out for large TTC estimates. 
 
 ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_1.png)
 
-#### Sort the lidar points
+#### Observation 2: Sort the lidar points
 The first implementation of `computeTTCLidar` did not sort the lidar points. This resulted in the majority of Lidar TTC estaimtes looking way off. These results can be seen in the following table.  
 
 ##### Before sorting the lidar points
@@ -378,10 +378,8 @@ A graph of `v0` shows the velocity per frame:
 
 The negative velocities in frames 12 and 17 could mean the vehicle is moving backwards, but that is unlikely given that it is just one frame each time. There could be deceleration happening in general from around frame 10, which makes sense if the vehicle is approaching a red light.
 
-##### After sorting the lidar points on closing distance (front-to-rear bumper)
-
-
-This is implemented in the `computeTTCLidar` in [camFusion_Student.cpp](src/camFusion_Student.cpp):
+#### Improving the Lidar TTC estimates 
+The TTC estimates improved after sorting the lidar points on closing distance (front-to-rear bumper). This is implemented in the `computeTTCLidar` in [camFusion_Student.cpp](src/camFusion_Student.cpp):
 
 ```c++
 void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
@@ -421,7 +419,7 @@ void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
 }
 ```
 
-Sorting the lidar points on the x dimension before calculating the TTC produces a much better result, as can be seen in the next table.
+Sorting the lidar points on the `x` dimension (distance to the preceding vehicle) before calculating the TTC produces a much better result, as can be seen in the next table.
 
 Frame | Lidar points | TTC Lidar | TTC Camera
 ---:  | ---:  | ---:  | ---: 
@@ -444,6 +442,15 @@ Frame | Lidar points | TTC Lidar | TTC Camera
 17 | 279 | 9.54658 | 10.0052
 18 | 303 | 8.3988 | 10.5152
 
+Using this data, and the formulae above, we can calculate `v0`:
+
+![](results/Lidar_v0_Calculations.png)
+
+Now, when we graph `v0` the graph shows that velocity is steadily increasing. This is consistent with the TTC results in the table above: the TTC is steadily decreasing. So, as velocity is increasing, TTC is decreasing, which means we are getting steadily closer to the preceding vehicle. 
+
+![](results/v0_calculated_from_TTC.png)
+
+Again, these tables and graphs are in [the results spreadheet](results/results.xlsx).
 
 ## Performance Evaluation 2
 
