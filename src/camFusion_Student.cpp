@@ -275,18 +275,21 @@ void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
 
     /**
      Using the constant-velocity model (as opposed to a constant-acceleration model)
-     TTC = d1 * delta_t / (d0 - d1)
-     where: d0 is the previous frame's closing distance (front-to-rear bumper)
-            d1 is the current frame's closing distance (front-to-rear bumper)
+     TTC = minX_CurrentFrame * delta_t / (minX_PreviousFrame - minX_CurrentFrame)
+
+     where:
+            minX_PreviousFrame is the previous frame's closing distance (front-to-rear bumper)
+            minX_CurrentFrame is the current frame's closing distance (front-to-rear bumper)
             delta_t is the time elapsed between images (1 / frameRate)
+
      Note: this function does not take into account the distance from the lidar origin to the front bumper of our vehicle.
      It also does not account for the curvature or protrusions from the rear bumper of the preceding vehicle.
     */
-    double d0 = lidarPointsPreviousFrame[lidarPointsPreviousFrame.size() / 2].x;
-    double d1 = lidarPointsCurrentFrame[lidarPointsCurrentFrame.size() / 2].x;
+    double minX_PreviousFrame = lidarPointsPreviousFrame[lidarPointsPreviousFrame.size() / 2].x;
+    double minX_CurrentFrame = lidarPointsCurrentFrame[lidarPointsCurrentFrame.size() / 2].x;
     double delta_t = 1.0 / frameRate;
 
-    TTC = d1 * delta_t / (d0 - d1);
+    TTC = minX_CurrentFrame * delta_t / (minX_PreviousFrame - minX_CurrentFrame);
 }
 
 
