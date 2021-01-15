@@ -65,6 +65,26 @@ struct Hyperparameters
     string selectorType = "SEL_KNN";                // SEL_NN, SEL_KNN
 };
 
+
+struct KeypointMatchResult
+{
+    KeypointMatchResult()= default;
+    std::pair<unsigned int, unsigned int> matchedImagePair = {0,0};
+    unsigned int totalMatches = 0;
+    unsigned int knnMatches = 0;
+    unsigned int removed = 0;
+    double percentageRemoved = 0.0;
+};
+
+struct KeypointCountResult
+{
+    KeypointCountResult()= default;
+    string imageName = "No image name specified";
+    unsigned int totalKeypoints = 0;
+    double descriptorMatchingTime = 0.0;
+    unsigned int precedingVehicleKeypoints = 0;
+};
+
 struct ResultLineItem
 {
     ResultLineItem()= default;
@@ -73,6 +93,10 @@ struct ResultLineItem
     double ttcCamera = 0.0;
     unsigned int lidarPoints = 0;
 
+    KeypointMatchResult keypointMatch;
+    KeypointCountResult keypointCount;
+
+    double descriptorExtractionTime = 0.0;
 };
 
 struct PerformanceResults
@@ -83,16 +107,22 @@ struct PerformanceResults
     std::vector<ResultLineItem> data;
 };
 
-struct ExperimentResult
-{
-    ExperimentResult()= default;
 
-};
+//struct ExperimentResult
+//{
+//    ExperimentResult()= default;
+//    KeypointMatchResult keypointMatch;
+//    KeypointCountResult keypointCount;
+//
+//    // Log the time it takes for keypoint detection and descriptor extraction.
+//    double descriptorExtractionTime = 0.0;
+//};
 
 struct Experiment
 {
     Experiment()= default;
-    std::vector<ExperimentResult> result;
+//    std::vector<ExperimentResult> result;
+    std::vector<ResultLineItem> result;
     Hyperparameters hyperparameters;
 
     // Visualization and image saving options

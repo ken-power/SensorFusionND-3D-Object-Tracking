@@ -20,23 +20,25 @@
 #include "dataStructures.h"
 
 
-void detKeypointsHarris(std::vector<cv::KeyPoint> & keypoints, cv::Mat & img, bool bVis = false);
+void visualizeKeypoints(const vector<cv::KeyPoint> &keypoints, const cv::Mat &img, const string& windowName, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detectKeypoints(cv::Ptr<cv::FeatureDetector> &detector, const std::string& detectorName, std::vector<cv::KeyPoint> &keypoints, const cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsSIFT(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsAKAZE(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsORB(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsBRISK(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsFAST(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool displayImageWindows, bool saveImageFiles, ResultLineItem &result);
+void descKeypoints(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descriptors, const std::string& descriptorType, ResultLineItem &result);
+void matchDescriptors(vector<cv::KeyPoint> &kPtsSource,
+                      vector<cv::KeyPoint> &kPtsRef,
+                      cv::Mat &descSource,
+                      cv::Mat &descRef,
+                      vector<cv::DMatch> &matches,
+                      const string &descriptorType,
+                      const string& matcherType,
+                      const string& selectorType,
+                      ResultLineItem &result);
 
-void detKeypointsShiTomasi(std::vector<cv::KeyPoint> & keypoints, cv::Mat & img, bool bVis = false);
-
-void
-detKeypointsModern(std::vector<cv::KeyPoint> & keypoints, cv::Mat & img, std::string detectorType, bool bVis = false);
-
-void
-descKeypoints(std::vector<cv::KeyPoint> & keypoints, cv::Mat & img, cv::Mat & descriptors, std::string descriptorType);
-
-void matchDescriptors(std::vector<cv::KeyPoint> & kPtsSource,
-                      std::vector<cv::KeyPoint> & kPtsRef,
-                      cv::Mat & descSource,
-                      cv::Mat & descRef,
-                      std::vector<cv::DMatch> & matches,
-                      std::string descriptorType,
-                      std::string matcherType,
-                      std::string selectorType);
 
 #endif /* matching2D_hpp */

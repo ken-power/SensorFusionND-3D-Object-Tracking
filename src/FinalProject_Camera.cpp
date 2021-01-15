@@ -231,7 +231,7 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
 
         if(detectorType.compare("SHITOMASI") == 0)
         {
-            detKeypointsShiTomasi(keypoints, imgGray, false);
+            detKeypointsShiTomasi(keypoints, imgGray, false, true, result);
         }else
         {
             //...
@@ -264,7 +264,8 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
         descKeypoints((dataBuffer.end() - 1)->keypoints,
                       (dataBuffer.end() - 1)->cameraImg,
                       descriptors,
-                      descriptorType);
+                      descriptorType,
+                      result);
         results.descriptor = descriptorType;
 
         // push descriptors for current frame to end of data buffer
@@ -283,9 +284,15 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
             string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
             string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
 
-            matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
-                             (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
-                             matches, descriptorType, matcherType, selectorType);
+            matchDescriptors((dataBuffer.end() - 2)->keypoints,
+                             (dataBuffer.end() - 1)->keypoints,
+                             (dataBuffer.end() - 2)->descriptors,
+                             (dataBuffer.end() - 1)->descriptors,
+                             matches,
+                             descriptorType,
+                             matcherType,
+                             selectorType,
+                             result);
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
