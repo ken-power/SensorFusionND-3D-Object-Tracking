@@ -20,17 +20,39 @@
 #include "lidarData.hpp"
 #include "camFusion.hpp"
 
-void DisplayResultsTable(PerformanceResults results);
-
-void DisplayImagesTable(PerformanceResults results);
-
 using namespace std;
 
-/* MAIN PROGRAM */
-int main(int argc, const char *argv[])
-{
-    /* INIT VARIABLES AND DATA STRUCTURES */
+void DisplayResultsTable(const PerformanceResults &  results);
+void DisplayImagesTable(const PerformanceResults &  results);
+void RunExperimentSet(PerformanceResults & results);
+void RunExperiment(Experiment & experiment, PerformanceResults & results);
 
+int main()
+{
+
+    PerformanceResults results;
+    RunExperimentSet(results);
+
+    DisplayResultsTable(results);
+    DisplayImagesTable(results);
+
+    return 0;
+}
+
+void RunExperimentSet(PerformanceResults & results)
+{
+    Experiment experiment;
+
+    RunExperiment(experiment, results);
+}
+
+
+/*
+ * This function encapsulates running an experiment with a given combination of detector, descriptor, matcher,
+ * descriptor type, and selector.
+ */
+void RunExperiment(Experiment & experiment, PerformanceResults & results)
+{
     // data location
     string dataPath = "../";
 
@@ -114,7 +136,6 @@ int main(int argc, const char *argv[])
 
     // Track the results
     ResultLineItem result;
-    PerformanceResults results;
 
     /* MAIN LOOP OVER ALL IMAGES */
 
@@ -385,14 +406,9 @@ int main(int argc, const char *argv[])
             } // eof loop over all BB matches
         }
     } // eof loop over all images
-
-    DisplayResultsTable(results);
-    DisplayImagesTable(results);
-
-    return 0;
 }
 
-void DisplayResultsTable(PerformanceResults results)
+void DisplayResultsTable(const PerformanceResults & results)
 {
     const string separator = " | ";
     cout << "\nPerformance Results" << endl;
@@ -408,7 +424,7 @@ void DisplayResultsTable(PerformanceResults results)
     }
 }
 
-void DisplayImagesTable(PerformanceResults results)
+void DisplayImagesTable(const PerformanceResults &  results)
 {
     string imageFileNameLidarTTC;
     string imageFileNameCameraTTC;

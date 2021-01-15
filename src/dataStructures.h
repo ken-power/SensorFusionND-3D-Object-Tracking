@@ -6,6 +6,8 @@
 #include <map>
 #include <opencv2/core.hpp>
 
+using namespace std;
+
 struct LidarPoint
 { // single lidar point in space
     double x, y, z, r; // x,y,z in [m], r is point reflectivity
@@ -40,10 +42,32 @@ struct DataFrame
     std::map<int, int> bbMatches; // bounding box matches between previous and current frame
 };
 
+enum KeypointDetector
+{
+    Shi_Tomasi,
+    HARRIS,
+    FAST,
+    BRISK,
+    ORB,
+    AKAZE,
+    SIFT
+};
+
+
+struct Hyperparameters
+{
+    Hyperparameters()= default;
+
+    KeypointDetector keypointDetector = Shi_Tomasi; // Shi_Tomasi, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
+    string descriptor = "BRIEF";                    // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+    string matcherType = "MAT_BF";                  // MAT_BF, MAT_FLANN
+    string descriptorType = "DES_BINARY";           // DES_BINARY, DES_HOG
+    string selectorType = "SEL_KNN";                // SEL_NN, SEL_KNN
+};
 
 struct ResultLineItem
 {
-    ResultLineItem() = default;
+    ResultLineItem()= default;
     unsigned int frame = 0;
     double ttcLidar = 0.0;
     double ttcCamera = 0.0;
@@ -53,10 +77,29 @@ struct ResultLineItem
 
 struct PerformanceResults
 {
-    PerformanceResults() = default;
+    PerformanceResults()= default;
     std::string detector = "";
     std::string descriptor = "";
     std::vector<ResultLineItem> data;
+};
+
+struct ExperimentResult
+{
+    ExperimentResult()= default;
+
+};
+
+struct Experiment
+{
+    Experiment()= default;
+    std::vector<ExperimentResult> result;
+    Hyperparameters hyperparameters;
+
+    // Visualization and image saving options
+    bool displayImageWindows = false;               // visualize matches between current and previous image?
+    bool isFocusOnPrecedingVehicleOnly = true;      // only keep keypoints on the preceding vehicle?
+    bool saveKeypointDetectionImagesToFile = false;  // save keypoint detection images to file
+    bool saveKeypointMatchImagesToFile = false;      // save keypoint matching images to file
 };
 
 
