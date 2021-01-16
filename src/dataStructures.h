@@ -13,6 +13,7 @@ struct LidarPoint
     double x, y, z, r; // x,y,z in [m], r is point reflectivity
 };
 
+
 struct BoundingBox
 { // bounding box around a classified object (contains both 2D and 3D data)
 
@@ -28,6 +29,7 @@ struct BoundingBox
     std::vector<cv::DMatch> kptMatches; // keypoint matches enclosed by 2D roi
 };
 
+
 struct DataFrame
 { // represents the available sensor information at the same time instance
 
@@ -42,23 +44,12 @@ struct DataFrame
     std::map<int, int> bbMatches; // bounding box matches between previous and current frame
 };
 
-enum KeypointDetector
-{
-    Shi_Tomasi,
-    HARRIS,
-    FAST,
-    BRISK,
-    ORB,
-    AKAZE,
-    SIFT
-};
-
 
 struct Hyperparameters
 {
     Hyperparameters()= default;
 
-    KeypointDetector keypointDetector = Shi_Tomasi; // Shi_Tomasi, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
+    string keypointDetector = "Shi_Tomasi"; // Shi_Tomasi, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
     string descriptor = "BRIEF";                    // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
     string matcherType = "MAT_BF";                  // MAT_BF, MAT_FLANN
     string descriptorType = "DES_BINARY";           // DES_BINARY, DES_HOG
@@ -76,6 +67,7 @@ struct KeypointMatchResult
     double percentageRemoved = 0.0;
 };
 
+
 struct KeypointCountResult
 {
     KeypointCountResult()= default;
@@ -84,6 +76,7 @@ struct KeypointCountResult
     double descriptorMatchingTime = 0.0;
     unsigned int precedingVehicleKeypoints = 0;
 };
+
 
 struct ResultLineItem
 {
@@ -99,38 +92,27 @@ struct ResultLineItem
     double descriptorExtractionTime = 0.0;
 };
 
-struct PerformanceResults
+
+struct ResultSet
 {
-    PerformanceResults()= default;
+    ResultSet()= default;
     std::string detector = "";
     std::string descriptor = "";
     std::vector<ResultLineItem> data;
 };
 
 
-//struct ExperimentResult
-//{
-//    ExperimentResult()= default;
-//    KeypointMatchResult keypointMatch;
-//    KeypointCountResult keypointCount;
-//
-//    // Log the time it takes for keypoint detection and descriptor extraction.
-//    double descriptorExtractionTime = 0.0;
-//};
-
 struct Experiment
 {
     Experiment()= default;
-//    std::vector<ExperimentResult> result;
-    std::vector<ResultLineItem> result;
+    std::vector<ResultSet> resultSet;
     Hyperparameters hyperparameters;
 
     // Visualization and image saving options
     bool displayImageWindows = false;               // visualize matches between current and previous image?
     bool isFocusOnPrecedingVehicleOnly = true;      // only keep keypoints on the preceding vehicle?
     bool saveKeypointDetectionImagesToFile = false;  // save keypoint detection images to file
-    bool saveKeypointMatchImagesToFile = false;      // save keypoint matching images to file
+    bool saveKeypointMatchImagesToFile = true;      // save keypoint matching images to file
 };
-
 
 #endif /* dataStructures_h */

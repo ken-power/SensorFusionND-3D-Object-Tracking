@@ -22,28 +22,115 @@
 
 using namespace std;
 
-void DisplayResultsTable(const PerformanceResults &  results);
-void DisplayImagesTable(const PerformanceResults &  results);
-void RunExperimentSet(PerformanceResults & results);
-void RunExperiment(Experiment & experiment, PerformanceResults & results);
+void DisplayResultsTable(const ResultSet & results);
+
+void DisplayImagesTable(const ResultSet & results);
+
+vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
+                                   const std::vector<string> & detectors,
+                                   const std::vector<string> & descriptors);
+
+void RunExperiment(Experiment & experiment, ResultSet & results);
 
 int main()
 {
+    Hyperparameters hyperparameters = Hyperparameters();
 
-    PerformanceResults results;
-    RunExperimentSet(results);
+    std::vector<string> detectors = {
+            "Shi_Tomasi",
+//            "HARRIS",
+//            FAST,
+//            BRISK,
+//            ORB,
+//            AKAZE,
+            "SIFT"
+    };
+    std::vector<string> descriptors = {
+            "BRISK"//,
+//            "BRIEF",
+//            "ORB",
+//            "FREAK",
+//            "AKAZE",
+//            "SIFT"
+    };
 
-    DisplayResultsTable(results);
-    DisplayImagesTable(results);
+    std::vector<ResultSet> resultSet = RunExperimentSet(hyperparameters, detectors, descriptors);
+
+    for(const auto & results : resultSet)
+    {
+        DisplayResultsTable(results);
+        DisplayImagesTable(results);
+    }
 
     return 0;
 }
 
-void RunExperimentSet(PerformanceResults & results)
+vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
+                                   const std::vector<string> & detectors,
+                                   const std::vector<string> & descriptors)
 {
-    Experiment experiment;
+    unsigned int experimentCount = 0;
+    std::vector<ResultSet> resultSet;
 
-    RunExperiment(experiment, results);
+    for(const auto & detector:detectors)
+    {
+        for(const auto & descriptor:descriptors)
+        {
+            cout << "\n*** RUNNING EXPERIMENT " << experimentCount << " WITH detector = " << detector
+                 << "  and descriptor = " << descriptor << " ***" << endl;
+            ResultSet results;
+
+            hyperparameters.descriptor = descriptor;
+
+            Experiment experiment = Experiment();
+            experiment.hyperparameters = hyperparameters;
+            experiment.hyperparameters.keypointDetector = detector;
+            experiment.hyperparameters.descriptor = descriptor;
+
+            // There are some combinations of detector and descriptor that do not work together:
+            if(descriptor == "AKAZE")
+            {
+                // AKAZE descriptors work only with AKAZE detectors.
+                if(detector == "AKAZE")
+                {
+                    RunExperiment(experiment, results);
+                }
+                else
+                {
+                    cerr << "Can't use AKAZE descriptor with non-AKAZE detector." << endl;
+                    continue;
+                }
+            }
+
+            if(descriptor == "ORB")
+            {
+                // ORB detectors do not work with SIFT descriptors.
+                if(detector != "SIFT")
+                {
+                    RunExperiment(experiment, results);
+                }
+                else
+                {
+                    cerr << "Can't use ORB descriptor with SIFT detector." << endl;
+                    continue;
+                }
+            }
+
+            // All other detector-descriptor combinations are assumed to be valid
+            RunExperiment(experiment, results);
+
+            resultSet.push_back(results);
+
+            experimentCount++;
+        }
+    }
+
+    cout << "# Performance Evaluation" << endl;
+    cout << "These results are recorded from running a total of " << experimentCount
+         << " experiments based on combinations of " << detectors.size() << " detectors and " << descriptors.size()
+         << " descriptors." << endl;
+
+    return resultSet;
 }
 
 
@@ -51,8 +138,11 @@ void RunExperimentSet(PerformanceResults & results)
  * This function encapsulates running an experiment with a given combination of detector, descriptor, matcher,
  * descriptor type, and selector.
  */
-void RunExperiment(Experiment & experiment, PerformanceResults & results)
+void RunExperiment(Experiment & experiment, ResultSet & results)
 {
+    unsigned int firstImage = 0;
+    unsigned int secondImage = 1;
+
     // data location
     string dataPath = "../";
 
@@ -136,6 +226,7 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
 
     // Track the results
     ResultLineItem result;
+    const bool visualizeImages = experiment.displayImageWindows;
 
     /* MAIN LOOP OVER ALL IMAGES */
 
@@ -208,7 +299,13 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
         bVis = true;
         if(bVis)
         {
-            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), false);
+            show3DObjects((dataBuffer.end() - 1)->boundingBoxes,
+                          cv::Size(4.0, 20.0),
+                          cv::Size(2000, 2000),
+                          false,
+                          result,
+                          experiment.hyperparameters.keypointDetector,
+                          experiment.hyperparameters.descriptor);
         }
         bVis = false;
 
@@ -226,24 +323,66 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "SHITOMASI";
-        results.detector = detectorType;
+//        string detectorType = "SHITOMASI";
+//        results.detector = detectorType;
 
-        if(detectorType.compare("SHITOMASI") == 0)
+        result.keypointMatch.matchedImagePair.first = firstImage;
+        result.keypointMatch.matchedImagePair.second = secondImage;
+
+        if(experiment.hyperparameters.keypointDetector == "SIFT" || experiment.hyperparameters.descriptor == "SIFT")
         {
-            detKeypointsShiTomasi(keypoints, imgGray, false, true, result);
-        }else
+            experiment.hyperparameters.matcherType = "MAT_FLANN";
+            experiment.hyperparameters.descriptorType = "DES_HOG";
+        }
+        else
         {
-            //...
+            experiment.hyperparameters.matcherType = "MAT_BF";
+            experiment.hyperparameters.descriptorType = "DES_BINARY";
         }
 
+
+        results.detector = experiment.hyperparameters.keypointDetector;
+        bool saveImagesToFile = experiment.saveKeypointDetectionImagesToFile;
+
+        if(experiment.hyperparameters.keypointDetector == "Shi_Tomasi")
+        {
+            detKeypointsShiTomasi(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else if(experiment.hyperparameters.keypointDetector == "HARRIS")
+        {
+            detKeypointsHarris(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else if(experiment.hyperparameters.keypointDetector == "FAST")
+        {
+            detKeypointsFAST(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else if(experiment.hyperparameters.keypointDetector == "BRISK")
+        {
+            detKeypointsBRISK(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else if(experiment.hyperparameters.keypointDetector == "ORB")
+        {
+            detKeypointsORB(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else if(experiment.hyperparameters.keypointDetector == "AKAZE")
+        {
+            detKeypointsAKAZE(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else if(experiment.hyperparameters.keypointDetector == "SIFT")
+        {
+            detKeypointsSIFT(keypoints, imgGray, visualizeImages, saveImagesToFile, result);
+        }
+        else
+        {
+            cerr << "Attempting to use an unsupported keypoint detector" << endl;
+        }
         // optional : limit number of keypoints (helpful for debugging and learning)
         bool bLimitKpts = false;
         if(bLimitKpts)
         {
             int maxKeypoints = 50;
 
-            if(detectorType.compare("SHITOMASI") == 0)
+            if(experiment.hyperparameters.keypointDetector == "Shi_Tomasi")
             { // there is no response info, so keep the first 50 as they are sorted in descending quality order
                 keypoints.erase(keypoints.begin() + maxKeypoints, keypoints.end());
             }
@@ -260,12 +399,14 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+        string descriptorType = experiment.hyperparameters.descriptor; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints,
                       (dataBuffer.end() - 1)->cameraImg,
                       descriptors,
                       descriptorType,
                       result);
+
+
         results.descriptor = descriptorType;
 
         // push descriptors for current frame to end of data buffer
@@ -280,19 +421,42 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
 
-            matchDescriptors((dataBuffer.end() - 2)->keypoints,
-                             (dataBuffer.end() - 1)->keypoints,
-                             (dataBuffer.end() - 2)->descriptors,
-                             (dataBuffer.end() - 1)->descriptors,
-                             matches,
-                             descriptorType,
-                             matcherType,
-                             selectorType,
-                             result);
+
+            string matcherType = experiment.hyperparameters.matcherType;        // MAT_BF, MAT_FLANN
+            string descriptorType = experiment.hyperparameters.descriptorType; // DES_BINARY, DES_HOG
+            string selectorType = experiment.hyperparameters.selectorType;       // SEL_NN, SEL_KNN
+
+            try
+            {
+                result.keypointMatch.matchedImagePair.first = firstImage;
+                result.keypointMatch.matchedImagePair.second = secondImage;
+
+                if(experiment.hyperparameters.keypointDetector == "SIFT" ||
+                   experiment.hyperparameters.descriptor == "SIFT")
+                {
+                    experiment.hyperparameters.matcherType = "MAT_FLANN";
+                    experiment.hyperparameters.descriptorType = "DES_HOG";
+                }
+                else
+                {
+                    experiment.hyperparameters.matcherType = "MAT_BF";
+                    experiment.hyperparameters.descriptorType = "DES_BINARY";
+                }
+                matchDescriptors((dataBuffer.end() - 2)->keypoints,
+                                 (dataBuffer.end() - 1)->keypoints,
+                                 (dataBuffer.end() - 2)->descriptors,
+                                 (dataBuffer.end() - 1)->descriptors,
+                                 matches,
+                                 descriptorType,
+                                 matcherType,
+                                 selectorType,
+                                 result);
+            }
+            catch(const std::exception & ex)
+            {
+                std::cerr << "Exception calling matchDescriptors(): " << ex.what() << std::endl;
+            }
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
@@ -354,7 +518,10 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
                     //// STUDENT ASSIGNMENT
                     //// TASK FP.2 -> compute time-to-collision based on Lidar data (implement -> computeTTCLidar)
                     double ttcLidar;
-                    computeTTCLidar(boundingBoxPreviousFrame->lidarPoints, boundingBoxCurrentFrame->lidarPoints, sensorFrameRate, ttcLidar);
+                    computeTTCLidar(boundingBoxPreviousFrame->lidarPoints,
+                                    boundingBoxCurrentFrame->lidarPoints,
+                                    sensorFrameRate,
+                                    ttcLidar);
                     //// EOF STUDENT ASSIGNMENT
 
                     //// STUDENT ASSIGNMENT
@@ -381,10 +548,16 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
                     if(bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
-                        showLidarImgOverlay(visImg, boundingBoxCurrentFrame->lidarPoints, P_rect_00, R_rect_00, RT, &visImg);
+                        showLidarImgOverlay(visImg,
+                                            boundingBoxCurrentFrame->lidarPoints,
+                                            P_rect_00,
+                                            R_rect_00,
+                                            RT,
+                                            &visImg);
                         cv::rectangle(visImg,
                                       cv::Point(boundingBoxCurrentFrame->roi.x, boundingBoxCurrentFrame->roi.y),
-                                      cv::Point(boundingBoxCurrentFrame->roi.x + boundingBoxCurrentFrame->roi.width, boundingBoxCurrentFrame->roi.y + boundingBoxCurrentFrame->roi.height),
+                                      cv::Point(boundingBoxCurrentFrame->roi.x + boundingBoxCurrentFrame->roi.width,
+                                                boundingBoxCurrentFrame->roi.y + boundingBoxCurrentFrame->roi.height),
                                       cv::Scalar(0, 255, 0),
                                       2);
 
@@ -398,7 +571,7 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
 //                        cout << "Press key to continue to next frame" << endl;
 //                        cv::waitKey(0);
 
-                        string imageFileName = string("../results/images/lidar_camera_ttc_combined/ttc_" + results.detector + "_" + results.descriptor + "_image_" + to_string(imgIndex) + ".png");
+                        string imageFileName = "../" + GetTtcFilename(results.detector, results.descriptor, result.frame);
                         cv::imwritemulti(imageFileName, visImg);
                     }
                     bVis = false;
@@ -408,14 +581,17 @@ void RunExperiment(Experiment & experiment, PerformanceResults & results)
                     result.ttcCamera = ttcCamera;
                     result.lidarPoints = currentFrame.lidarPoints.size();
 
-                    results.data.push_back(result);
                 } // eof TTC computation
+
+                firstImage++;
+                secondImage++;
             } // eof loop over all BB matches
+            results.data.push_back(result);
         }
     } // eof loop over all images
 }
 
-void DisplayResultsTable(const PerformanceResults & results)
+void DisplayResultsTable(const ResultSet & results)
 {
     const string separator = " | ";
     cout << "\nPerformance Results" << endl;
@@ -427,11 +603,12 @@ void DisplayResultsTable(const PerformanceResults & results)
 
     for(const auto & result : results.data)
     {
-        cout << result.frame << separator << result.lidarPoints << separator << result.ttcLidar << separator << result.ttcCamera << endl;
+        cout << result.frame << separator << result.lidarPoints << separator << result.ttcLidar << separator
+             << result.ttcCamera << endl;
     }
 }
 
-void DisplayImagesTable(const PerformanceResults &  results)
+void DisplayImagesTable(const ResultSet & results)
 {
     string imageFileNameLidarTTC;
     string imageFileNameCameraTTC;
@@ -441,14 +618,19 @@ void DisplayImagesTable(const PerformanceResults &  results)
     cout << "* Detector = " << results.detector << endl;
     cout << "* Descriptor = " << results.descriptor << endl << endl;
 
-    cout << "Frame" << separator << "Top view perspective of Lidar points showing distance markers" << separator << "Image with TTC estimates from Lidar and Camera" << separator << "Lidar points" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
-    cout << ":---: " << separator << ":---: " << separator << ":---: " << separator << "---: " << separator << "---: " << separator << "---: " << endl;
+    cout << "Frame" << separator << "Top view perspective of Lidar points showing distance markers" << separator
+         << "Image with TTC estimates from Lidar and Camera" << separator << "Lidar points" << separator << "TTC Lidar"
+         << separator << "TTC Camera" << endl;
+    cout << ":---: " << separator << ":---: " << separator << ":---: " << separator << "---: " << separator << "---: "
+         << separator << "---: " << endl;
 
     for(const auto & result : results.data)
     {
-        imageFileNameLidarTTC = string("results/images/lidar_top_view/image_" + to_string(result.frame) + ".png");
-        imageFileNameCameraTTC = string("results/images/lidar_camera_ttc_combined/ttc_" + results.detector + "_" + results.descriptor + "_image_" + to_string(result.frame) + ".png");
+        imageFileNameLidarTTC = GetLidarFilename(results.detector, results.descriptor, result.frame);
+        imageFileNameCameraTTC = GetTtcFilename(results.detector, results.descriptor, result.frame);
 
-        cout << result.frame << separator << "![](" << imageFileNameLidarTTC << ")" << separator << "![](" << imageFileNameCameraTTC << ")" << separator << result.lidarPoints << separator << result.ttcLidar << separator << result.ttcCamera << endl;
+        cout << result.frame << separator << "![](" << imageFileNameLidarTTC << ")" << separator << "![]("
+             << imageFileNameCameraTTC << ")" << separator << result.lidarPoints << separator << result.ttcLidar
+             << separator << result.ttcCamera << endl;
     }
 }

@@ -25,12 +25,21 @@ void matchBoundingBoxes(std::vector<cv::DMatch> & matches,
                         DataFrame & previousFrame,
                         DataFrame & currentFrame);
 
-void show3DObjects(std::vector<BoundingBox> & boundingBoxes, cv::Size worldSize, cv::Size imageSize, bool bWait = true);
+void show3DObjects(vector<BoundingBox> & boundingBoxes,
+                   cv::Size worldSize,
+                   cv::Size imageSize,
+                   bool bWait,
+                   ResultLineItem & result,
+                   const string & detector,
+                   const string & descriptor);
 
 void computeTTCCamera(std::vector<cv::KeyPoint> & kptsPrev, std::vector<cv::KeyPoint> & kptsCurr,
                       std::vector<cv::DMatch> kptMatches, double frameRate, double & TTC, cv::Mat *visImg = nullptr);
 
 void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
                      std::vector<LidarPoint> & lidarPointsCurrentFrame, double frameRate, double & TTC);
+
+const string GetTtcFilename(const string detector, const string descriptor, const int frame);
+const string GetLidarFilename(const string detector, const string descriptor, const int frame);
 
 #endif /* camFusion_hpp */
