@@ -28,66 +28,82 @@ void DisplayResultsTable(const ResultSet & results);
 
 void DisplayImagesTable(const ResultSet & results);
 
-vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
-                                   const std::vector<string> & detectors,
-                                   const std::vector<string> & descriptors);
+vector<Experiment> RunExperimentSet(Hyperparameters hyperparameters,
+                                    const std::vector<string> & detectors,
+                                    const std::vector<string> & descriptors);
 
-void RunExperiment(Experiment & experiment, ResultSet & results);
+void RunExperiment(Experiment & experiment);
+
+void PrintResultLineDetails(ResultLineItem lineItem);
+
+void PrintExperimentDetails(Experiment & experiment);
 
 int main()
 {
+    cout << "#Program Output" << endl << "```shell" << endl;
     Hyperparameters hyperparameters = Hyperparameters();
 
     std::vector<string> detectors = {
             "Shi_Tomasi",
-//            "HARRIS",
-//            FAST,
-//            BRISK,
-//            ORB,
-//            AKAZE,
+            "HARRIS",
+            "FAST",
+            "BRISK",
+            "ORB",
+            "AKAZE",
             "SIFT"
     };
     std::vector<string> descriptors = {
-            "BRISK"//,
-//            "BRIEF",
-//            "ORB",
-//            "FREAK",
-//            "AKAZE",
-//            "SIFT"
+            "BRISK",
+            "BRIEF",
+            "ORB",
+            "FREAK",
+            "AKAZE",
+            "SIFT"
     };
 
-    std::vector<ResultSet> resultSet = RunExperimentSet(hyperparameters, detectors, descriptors);
+    std::vector<Experiment> experiments = RunExperimentSet(hyperparameters, detectors, descriptors);
 
-    for(const auto & results : resultSet)
+    cout << endl << "```" << endl;
+
+    cout << "\nSize of Experiment Set = " << experiments.size() << endl;
+
+    for(const auto & experiment : experiments)
     {
-        DisplayResultsTable(results);
-        DisplayImagesTable(results);
+        cout << "Experiment has " << experiment.resultSet.size() << " result sets" << endl;
+        for(const auto & result : experiment.resultSet)
+        {
+            cout << "ResultSet has " << result.data.size() << " results" << endl;
+            DisplayResultsTable(result);
+            DisplayImagesTable(result);
+        }
     }
 
     return 0;
 }
 
-vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
-                                   const std::vector<string> & detectors,
-                                   const std::vector<string> & descriptors)
+vector<Experiment> RunExperimentSet(Hyperparameters hyperparameters,
+                                    const std::vector<string> & detectors,
+                                    const std::vector<string> & descriptors)
 {
     unsigned int experimentCount = 0;
-    std::vector<ResultSet> resultSet;
+    std::vector<Experiment> experiments;
 
     for(const auto & detector:detectors)
     {
+        hyperparameters.keypointDetector = detector;
+
         for(const auto & descriptor:descriptors)
         {
+            hyperparameters.descriptor = descriptor;
+
             cout << "\n*** RUNNING EXPERIMENT " << experimentCount << " WITH detector = " << detector
                  << "  and descriptor = " << descriptor << " ***" << endl;
-            ResultSet results;
-
-            hyperparameters.descriptor = descriptor;
 
             Experiment experiment = Experiment();
             experiment.hyperparameters = hyperparameters;
             experiment.hyperparameters.keypointDetector = detector;
             experiment.hyperparameters.descriptor = descriptor;
+
 
             // There are some combinations of detector and descriptor that do not work together:
             if(descriptor == "AKAZE")
@@ -95,7 +111,7 @@ vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
                 // AKAZE descriptors work only with AKAZE detectors.
                 if(detector == "AKAZE")
                 {
-                    RunExperiment(experiment, results);
+                    RunExperiment(experiment);
                 }
                 else
                 {
@@ -109,7 +125,7 @@ vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
                 // ORB detectors do not work with SIFT descriptors.
                 if(detector != "SIFT")
                 {
-                    RunExperiment(experiment, results);
+                    RunExperiment(experiment);
                 }
                 else
                 {
@@ -119,10 +135,9 @@ vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
             }
 
             // All other detector-descriptor combinations are assumed to be valid
-            RunExperiment(experiment, results);
+            RunExperiment(experiment);
 
-            resultSet.push_back(results);
-
+            experiments.push_back(experiment);
             experimentCount++;
         }
     }
@@ -132,7 +147,7 @@ vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
          << " experiments based on combinations of " << detectors.size() << " detectors and " << descriptors.size()
          << " descriptors." << endl;
 
-    return resultSet;
+    return experiments;
 }
 
 
@@ -140,8 +155,12 @@ vector<ResultSet> RunExperimentSet(Hyperparameters hyperparameters,
  * This function encapsulates running an experiment with a given combination of detector, descriptor, matcher,
  * descriptor type, and selector.
  */
-void RunExperiment(Experiment & experiment, ResultSet & results)
+void RunExperiment(Experiment & experiment)
 {
+    ResultSet results;
+    results.detector = experiment.hyperparameters.keypointDetector;
+    results.descriptor = experiment.hyperparameters.descriptor;
+
     unsigned int firstImage = 0;
     unsigned int secondImage = 1;
 
@@ -313,10 +332,6 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
 
         cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
 
-
-        // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
-        //continue; // skips directly to the next image without processing what comes beneath
-
         /* DETECT IMAGE KEYPOINTS */
 
         // convert current image to grayscale
@@ -325,8 +340,6 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-//        string detectorType = "SHITOMASI";
-//        results.detector = detectorType;
 
         result.keypointMatch.matchedImagePair.first = firstImage;
         result.keypointMatch.matchedImagePair.second = secondImage;
@@ -342,8 +355,6 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
             experiment.hyperparameters.descriptorType = "DES_BINARY";
         }
 
-
-        results.detector = experiment.hyperparameters.keypointDetector;
         bool saveImagesToFile = experiment.saveKeypointDetectionImagesToFile;
 
         if(experiment.hyperparameters.keypointDetector == "Shi_Tomasi")
@@ -401,15 +412,12 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
         cv::Mat descriptors;
-        string descriptorType = experiment.hyperparameters.descriptor; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints,
                       (dataBuffer.end() - 1)->cameraImg,
                       descriptors,
-                      descriptorType,
+                      experiment.hyperparameters.descriptor,
                       result);
 
-
-        results.descriptor = descriptorType;
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
@@ -423,11 +431,6 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-
-
-            string matcherType = experiment.hyperparameters.matcherType;        // MAT_BF, MAT_FLANN
-            string descriptorType = experiment.hyperparameters.descriptorType; // DES_BINARY, DES_HOG
-            string selectorType = experiment.hyperparameters.selectorType;       // SEL_NN, SEL_KNN
 
             try
             {
@@ -445,19 +448,26 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
                     experiment.hyperparameters.matcherType = "MAT_BF";
                     experiment.hyperparameters.descriptorType = "DES_BINARY";
                 }
+
                 matchDescriptors((dataBuffer.end() - 2)->keypoints,
                                  (dataBuffer.end() - 1)->keypoints,
                                  (dataBuffer.end() - 2)->descriptors,
                                  (dataBuffer.end() - 1)->descriptors,
                                  matches,
-                                 descriptorType,
-                                 matcherType,
-                                 selectorType,
+                                 experiment.hyperparameters.descriptorType,
+                                 experiment.hyperparameters.matcherType,
+                                 experiment.hyperparameters.selectorType,
                                  result);
+                cout << "ALL OK" << endl;
+                PrintResultLineDetails(result);
+                PrintExperimentDetails(experiment);
             }
             catch(const std::exception & ex)
             {
                 std::cerr << "Exception calling matchDescriptors(): " << ex.what() << std::endl;
+                PrintResultLineDetails(result);
+                PrintExperimentDetails(experiment);
+                continue;
             }
 
             // store matches in current data frame
@@ -573,7 +583,8 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
 //                        cout << "Press key to continue to next frame" << endl;
 //                        cv::waitKey(0);
 
-                        string imageFileName = "../" + GetTtcFilename(results.detector, results.descriptor, result.frame);
+                        string imageFileName =
+                                "../" + GetTtcFilename(results.detector, results.descriptor, result.frame);
                         cv::imwritemulti(imageFileName, visImg);
                     }
                     bVis = false;
@@ -584,21 +595,48 @@ void RunExperiment(Experiment & experiment, ResultSet & results)
                     result.lidarPoints = currentFrame.lidarPoints.size();
 
                 } // eof TTC computation
-
-                firstImage++;
-                secondImage++;
             } // eof loop over all BB matches
+
             results.data.push_back(result);
+
+            firstImage++;
+            secondImage++;
         }
     } // eof loop over all images
+
+    experiment.resultSet.push_back(results);
+}
+
+void PrintExperimentDetails(Experiment & experiment)
+{
+    cout << "--- Experiment Details --- " << endl;
+    cout << "Number of results: " << experiment.resultSet.size() << endl;
+    cout << "Hyperparpameters: " << endl;
+    cout << "  -- Detector:\t" << experiment.hyperparameters.keypointDetector << endl;
+    cout << "  -- Descriptor:\t" << experiment.hyperparameters.descriptor << endl;
+    cout << "  -- Matcher Type:\t" << experiment.hyperparameters.matcherType << endl;
+    cout << "  -- Descriptor Type:\t" << experiment.hyperparameters.descriptorType << endl;
+    cout << "  -- Selector Type:\t" << experiment.hyperparameters.selectorType << endl;
+    cout << "Visualization Settings: " << endl;
+    cout << "  -- Display Image Windows:\t\t" << experiment.displayImageWindows << endl;
+    cout << "  -- Focus on Preceding Vehicle Only:\t\t" << experiment.isFocusOnPrecedingVehicleOnly << endl;
+    cout << "  -- Save Keypoint Detection Images:\t\t" << experiment.saveKeypointDetectionImagesToFile << endl;
+    cout << "  -- Save Keypoint Matching Images:\t\t" << experiment.saveKeypointMatchImagesToFile << endl;
+}
+
+void PrintResultLineDetails(ResultLineItem lineItem)
+{
+    cout << "Result Line Item" << endl;
+    cout << "Frame: " << lineItem.frame << endl;
+    cout << "TTC Lidar: " << lineItem.ttcLidar << endl;
+    cout << "TTC Camera: " << lineItem.ttcCamera << endl;
+    cout << "Lidar Points: " << lineItem.lidarPoints << endl;
 }
 
 void DisplayResultsTable(const ResultSet & results)
 {
     const string separator = " | ";
-    cout << "\nPerformance Results" << endl;
-    cout << "* Detector = " << results.detector << endl;
-    cout << "* Descriptor = " << results.descriptor << endl << endl;
+    cout << "\n## Performance Results" << " (Detector = " << results.detector << ", Descriptor = " << results.descriptor << ")\n" << endl;
 
     cout << "Frame" << separator << "Lidar points" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
     cout << "---: " << separator << "---: " << separator << "---: " << separator << "---: " << endl;
@@ -616,9 +654,7 @@ void DisplayImagesTable(const ResultSet & results)
     string imageFileNameCameraTTC;
 
     const string separator = " | ";
-    cout << "\nPerformance Results" << endl;
-    cout << "* Detector = " << results.detector << endl;
-    cout << "* Descriptor = " << results.descriptor << endl << endl;
+    cout << "\n## Performance Results" << " (Detector = " << results.detector << ", Descriptor = " << results.descriptor << ")\n" << endl;
 
     cout << "Frame" << separator << "Top view perspective of Lidar points showing distance markers" << separator
          << "Image with TTC estimates from Lidar and Camera" << separator << "Lidar points" << separator << "TTC Lidar"
