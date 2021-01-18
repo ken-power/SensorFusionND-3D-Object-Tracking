@@ -10,6 +10,8 @@ This project implements the missing parts in the schematic. To accomplish this, 
 3. Then proceed to do the same using the camera, which requires to first associate keypoint matches to regions of interest and then to compute the TTC based on those matches. 
 4. And lastly, conduct various tests with the framework. The goal is to identify the most suitable detector/descriptor combination for TTC estimation and also to search for problems that can lead to faulty measurements by the camera or Lidar sensor. 
 
+![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_SIFT_SIFT_17.png)
+
 # Contents
 
 * [Project Specification](#Project-Specification)
@@ -23,6 +25,7 @@ This project implements the missing parts in the schematic. To accomplish this, 
   * [Performance Evaluation 2](#Performance-Evaluation-2)
 * [Building and Running the Project](#Building-and-Running-the-Project)
 * [References](#References)
+* [Additional Project Files](#Additional-Project-Files)
 
 
 # Project Specification
@@ -532,5 +535,145 @@ Although the camera-based TTC eventually aligns with the Lidar-based TTC in late
 3. Compile: `cmake .. && make`
 4. Run it: `./3D_object_tracking`.
 
+## Notes on the Code
+
+* The file [MidTermProject_Camera_Student.cpp](src/MidTermProject_Camera_Student.cpp) contains the `main()` function, and is the starting point for the program.
+* The file [dataStructures.h](src/dataStructures.h) contains data structures used throughout the proejct code, including `DataFrame`, `KeypointDetector`, and `Hyperparameters`.
+* The files [matching2D.hpp](src/matching2D.hpp) and [matching2D_Student.cpp](src/matching2D_Student.cpp) define the functions that perform keypoint detection and matching.
+* The files [](src/reporting.h) and [](src/reporting.cpp) define structures and functions used to auto-generate the results in markdown format. I use these to easily generate all the performance evaluation tables, and then insert them into this README document, and into the [results spreadsheet](results/results.xlsx).
+
+### The `main()` funciton
+
+Rather than re-run the program manually for each detector-descriptor pair, and then manually gather the results from the console, I run the program once for all detector-descriptor pairs. The project is structured around the model of an `Experiment`. Each `Experiment` runs one detector-descriptor pair, and gathers the results. The `main()` function invokes a function called `RunExperimentSet`, which runs a set of experiments - one for each valid detector-descriptor combination.
+
+
+The `main()` function defines three variables - the hyperparameters, the set of detectors to use, and the set of descriptors to use in the experiments.
+
+```c++
+int main()
+{
+    Hyperparameters hyperparameters = Hyperparameters();
+
+    std::vector<string> detectors = {
+            "Shi_Tomasi",
+            "HARRIS",
+            "FAST",
+            "BRISK",
+            "ORB",
+            "AKAZE",
+            "SIFT"
+    };
+
+    std::vector<string> descriptors = {
+            "BRISK",
+            "BRIEF",
+            "ORB",
+            "FREAK",
+            "AKAZE",
+            "SIFT"
+    };
+
+    // Run experiments for all combinations of detectors and descriptors
+    std::vector<Experiment> experiments = RunExperimentSet(hyperparameters, detectors, descriptors);
+    
+    ...
+    
+    return 0;
+}
+```
+
+To run the project for a subset of the detectors and descriptors, simply comment out the ones you do not want to run, e.g.,:
+```c++
+    std::vector<string> detectors = {
+          "Shi_Tomasi",
+//          "HARRIS",
+//         "FAST",
+//          "BRISK",
+//          "ORB",
+//          "AKAZE",
+          "SIFT"
+    };
+
+    std::vector<string> descriptors = {
+            "BRISK",
+//            "BRIEF",
+//            "ORB",
+//            "FREAK",
+//            "AKAZE",
+            "SIFT"
+    };
+
+```
+This scenario results in running a total of 4 experiments based on combinations of 2 detectors and 2 descriptors. The following tables illustrate what the results would look like for this scenario:
+
+### Hyperparameters
+
+The `Hyperparameters` are implemented as a `struct` in [dataStructures.h](src/dataStructures.h):
+
+```c++
+struct Hyperparameters
+{
+    Hyperparameters()= default;
+    
+    string keypointDetector = "Shi_Tomasi"; // Shi_Tomasi, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
+    string descriptor = "BRIEF";                    // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+    string matcherType = "MAT_BF";                  // MAT_BF, MAT_FLANN
+    string descriptorType = "DES_BINARY";           // DES_BINARY, DES_HOG
+    string selectorType = "SEL_KNN";                // SEL_NN, SEL_KNN
+};
+```
+### Running experiments
+
+The `RunExperimentSet()` function calls the `RunExperiment()` function one time for each valid detector-descriptor combination. The `RunExperiment()` function is where you will find much of the student assignment code.
+
+```c++
+/*
+ * This function encapsulates running an experiment with a given combination of detector, descriptor, matcher,
+ * descriptor type, and selector.
+ */
+void RunExperiment(Experiment &experiment)
+{
+    ...
+    ...
+}
+
+```
+
+An `Experiment` uses the `Hyperparameters` described earlier, and stores the results. It also has some configuration options that can be set via the `Experiment` struct in [reporting.h](src/reporting.h):
+
+```c++
+struct Experiment
+{
+    Experiment()= default;
+    std::vector<ResultSet> resultSet;
+    Hyperparameters hyperparameters;
+
+    // Visualization and image saving options
+    bool displayImageWindows = false;               // visualize matches between current and previous image?
+    bool isFocusOnPrecedingVehicleOnly = true;      // only keep keypoints on the preceding vehicle?
+    bool saveKeypointDetectionImagesToFile = true;  // save keypoint detection images to file
+    bool saveKeypointMatchImagesToFile = true;      // save keypoint matching images to file
+};
+```
+
+The confiuration shown above means that the image windows are not displayed when running the program. This allows a set of experiments to run quickly without needing any human intervention. If you want to see the images during an experiment run, then set the `displayImageWindows` variable to `true`:
+```c++
+struct Experiment
+{
+...
+    bool displayImageWindows = true;               // visualize matches between current and previous image?
+...
+};
+```
+
+
 # References
 * Rangesh, A. and Trivedi, M.M., 2019. [_No blind spots: Full-surround multi-object tracking for autonomous vehicles using cameras and lidars_](https://arxiv.org/pdf/1802.08755). IEEE Transactions on Intelligent Vehicles, 4(4), pp.588-599.
+* Kilicarslan, M. and Zheng, J.Y., 2018. [_Predict vehicle collision by TTC from motion using a single video camera_](https://ieeexplore.ieee.org/abstract/document/8360483). IEEE Transactions on Intelligent Transportation Systems, 20(2), pp.522-533.
+* Huang, J.K. and Grizzle, J.W., 2019. [_Improvements to Target-Based 3D LiDAR to Camera Calibration_](https://arxiv.org/pdf/1910.03126.pdf). arXiv preprint arXiv:1910.03126.
+* Raphael, E., Kiefer, R., Reisman, P. and Hayon, G., 2011. _Development of a camera-based forward collision alert system_. SAE International Journal of Passenger Cars-Mechanical Systems, 4(2011-01-0579), pp.467-478.
+* Jan Gaspar. [_Chapter 7. Boost.Circular Buffer_](https://www.boost.org/doc/libs/1_61_0/doc/html/circular_buffer.html). [Boost C++ Libraries](https://www.boost.org/).
+* StackOverflow. [_How to link C++ program with Boost using CMake_](https://stackoverflow.com/questions/3897839/how-to-link-c-program-with-boost-using-cmake).
+
+# Additional Project Files
+This repository contains the following additional files:
