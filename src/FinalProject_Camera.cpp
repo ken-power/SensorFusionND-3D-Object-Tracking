@@ -38,6 +38,10 @@ void PrintResultLineDetails(ResultLineItem lineItem);
 
 void PrintExperimentDetails(Experiment & experiment);
 
+void WriteToCSVFile(const vector<ResultSet> resultSet, ofstream & file);
+
+const bool ENABLE_DETAILED_DEBUG = false;
+
 int main()
 {
     cout << "#Program Output" << endl << "```shell" << endl;
@@ -67,6 +71,11 @@ int main()
 
     cout << "\nSize of Experiment Set = " << experiments.size() << endl;
 
+    const string csvFilename = "../results/FP6_performance_results.csv";
+    ofstream CSVfile;
+    CSVfile.open(csvFilename);
+
+
     for(const auto & experiment : experiments)
     {
         cout << "Experiment has " << experiment.resultSet.size() << " result sets" << endl;
@@ -76,9 +85,34 @@ int main()
             DisplayResultsTable(result);
             DisplayImagesTable(result);
         }
+
+        WriteToCSVFile(experiment.resultSet, CSVfile);
     }
 
+    CSVfile.close();
+
     return 0;
+}
+
+void WriteToCSVFile(const vector<ResultSet> resultSet, ofstream & file)
+{
+    cout << "WRITING CSV FILE" << endl;
+
+    const string separator = ", ";
+
+    for(const auto & results : resultSet)
+    {
+        cout << "WRITING CSV FILE FOR "<< "Detector = " << results.detector << separator << " and Descriptor = " << results.descriptor << endl;
+
+        file << separator << separator << separator << separator << endl;
+        file << "Detector" << separator << "Descriptor" << separator << "Frame" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
+
+        for(const auto & result : results.data)
+        {
+            file << results.detector << separator << results.descriptor << separator << result.frame << separator << result.ttcLidar << separator
+                 << result.ttcCamera << endl;
+        }
+    }
 }
 
 vector<Experiment> RunExperimentSet(Hyperparameters hyperparameters,
@@ -459,8 +493,12 @@ void RunExperiment(Experiment & experiment)
                                  experiment.hyperparameters.selectorType,
                                  result);
                 cout << "ALL OK" << endl;
-                PrintResultLineDetails(result);
-                PrintExperimentDetails(experiment);
+
+                if(ENABLE_DETAILED_DEBUG)
+                {
+                    PrintResultLineDetails(result);
+                    PrintExperimentDetails(experiment);
+                }
             }
             catch(const std::exception & ex)
             {
@@ -636,7 +674,8 @@ void PrintResultLineDetails(ResultLineItem lineItem)
 void DisplayResultsTable(const ResultSet & results)
 {
     const string separator = " | ";
-    cout << "\n## Performance Results" << " (Detector = " << results.detector << ", Descriptor = " << results.descriptor << ")\n" << endl;
+    cout << "\n## Performance Results" << " (Detector = " << results.detector << ", Descriptor = " << results.descriptor
+         << ")\n" << endl;
 
     cout << "Frame" << separator << "Lidar points" << separator << "TTC Lidar" << separator << "TTC Camera" << endl;
     cout << "---: " << separator << "---: " << separator << "---: " << separator << "---: " << endl;
@@ -654,7 +693,8 @@ void DisplayImagesTable(const ResultSet & results)
     string imageFileNameCameraTTC;
 
     const string separator = " | ";
-    cout << "\n## Performance Results" << " (Detector = " << results.detector << ", Descriptor = " << results.descriptor << ")\n" << endl;
+    cout << "\n## Performance Results" << " (Detector = " << results.detector << ", Descriptor = " << results.descriptor
+         << ")\n" << endl;
 
     cout << "Frame" << separator << "Top view perspective of Lidar points showing distance markers" << separator
          << "Image with TTC estimates from Lidar and Camera" << separator << "Lidar points" << separator << "TTC Lidar"

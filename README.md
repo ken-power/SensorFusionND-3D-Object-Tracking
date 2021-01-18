@@ -1,6 +1,6 @@
 # Track an Object in 3D Space
 
-This is the final project of the sensor fusion camera course. The following program schematic outlines what is included in this project.
+This project is part of the camera course in Udacity's sensor fusion nanodegree. The following program schematic outlines what is included in this project.
 
 ![](images/course_code_structure.png)
 
@@ -29,13 +29,13 @@ This project implements the missing parts in the schematic. To accomplish this, 
 
 #|Req| Criteria | Specification | Status
 :--- | :--- | :--- | :--- | :---
-FP.0|Report|Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf.|The writeup / README should include a statement and supporting figures / images that explain how each rubric item was addressed, and specifically where in the code each step was handled.| IN PROGRESS
-FP.1|Match 3D Objects|Implement the method "matchBoundingBoxes", which takes as input both the previous and the current data frames and provides as output the ids of the matched regions of interest (i.e. the boxID property). Matches must be the ones with the highest number of keypoint correspondences.|Code is functional and returns the specified output, where each bounding box is assigned the match candidate with the highest number of occurrences.| PLANNED
-FP.2|Compute Lidar-based TTC|Compute the time-to-collision in second for all matched 3D objects using only Lidar measurements from the matched bounding boxes between current and previous frame.|Code is functional and returns the specified output. Also, the code is able to deal with outlier Lidar points in a statistically robust way to avoid severe estimation errors.| PLANNED
-FP.3|Associate Keypoint Correspondences with Bounding Boxes|Prepare the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition must be added to a vector in the respective bounding box.|Code performs as described and adds the keypoint correspondences to the "kptMatches" property of the respective bounding boxes. Also, outlier matches have been removed based on the euclidean distance between them in relation to all the matches in the bounding box.| PLANNED
-FP.4|Compute Camera-based TTC|Compute the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.|Code is functional and returns the specified output. Also, the code is able to deal with outlier correspondences in a statistically robust way to avoid severe estimation errors.| PLANNED
-FP.5|Performance Evaluation 1|Find examples where the TTC estimate of the Lidar sensor does not seem plausible. Describe your observations and provide a sound argumentation why you think this happened.|Several examples (2-3) have been identified and described in detail. The assertion that the TTC is off has been based on manually estimating the distance to the rear of the preceding vehicle from a top view perspective of the Lidar points.| PLANNED
-FP.6|Performance Evaluation 2|Run several detector / descriptor combinations and look at the differences in TTC estimation. Find out which methods perform best and also include several examples where camera-based TTC estimation is way off. As with Lidar, describe your observations again and also look into potential reasons.|All detector / descriptor combinations implemented in previous chapters have been compared with regard to the TTC estimate on a frame-by-frame basis. To facilitate comparison, a spreadsheet and graph should be used to represent the different TTCs.| PLANNED
+FP.0|[Report](#Project-Report)|Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf.|The writeup / README should include a statement and supporting figures / images that explain how each rubric item was addressed, and specifically where in the code each step was handled.| DONE
+FP.1|[Match 3D Objects](#Match-3D-Objects)|Implement the method "matchBoundingBoxes", which takes as input both the previous and the current data frames and provides as output the ids of the matched regions of interest (i.e. the boxID property). Matches must be the ones with the highest number of keypoint correspondences.|Code is functional and returns the specified output, where each bounding box is assigned the match candidate with the highest number of occurrences.| DONE
+FP.2|[Compute Lidar-based TTC](#Compute-Camera-based-TTC)|Compute the time-to-collision in second for all matched 3D objects using only Lidar measurements from the matched bounding boxes between current and previous frame.]()|Code is functional and returns the specified output. Also, the code is able to deal with outlier Lidar points in a statistically robust way to avoid severe estimation errors.| DONE
+FP.3|[Associate Keypoint Correspondences with Bounding Boxes](#Associate-Keypoint-Correspondences-with-Bounding-Boxes)|Prepare the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition must be added to a vector in the respective bounding box.|Code performs as described and adds the keypoint correspondences to the "kptMatches" property of the respective bounding boxes. Also, outlier matches have been removed based on the euclidean distance between them in relation to all the matches in the bounding box.| DONE
+FP.4|[Compute Camera-based TTC](#Compute-Camera-based-TTC)|Compute the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.|Code is functional and returns the specified output. Also, the code is able to deal with outlier correspondences in a statistically robust way to avoid severe estimation errors.| DONE
+FP.5|[Performance Evaluation 1](#Performance-Evaluation-1)|Find examples where the TTC estimate of the Lidar sensor does not seem plausible. Describe your observations and provide a sound argumentation why you think this happened.|Several examples (2-3) have been identified and described in detail. The assertion that the TTC is off has been based on manually estimating the distance to the rear of the preceding vehicle from a top view perspective of the Lidar points.| DONE
+FP.6|[Performance Evaluation 2](#Performance-Evaluation-2)|Run several detector / descriptor combinations and look at the differences in TTC estimation. Find out which methods perform best and also include several examples where camera-based TTC estimation is way off. As with Lidar, describe your observations again and also look into potential reasons.|All detector / descriptor combinations implemented in previous chapters have been compared with regard to the TTC estimate on a frame-by-frame basis. To facilitate comparison, a spreadsheet and graph should be used to represent the different TTCs.| DONE
 
 
 # Project Report
@@ -454,6 +454,54 @@ Again, these tables and graphs are in [the results spreadheet](results/results.x
 
 ## Performance Evaluation 2
 
+This performance evaluation is about running the different detector / descriptor combinations and looking at the differences in TTC estimation. 
+The goal is to find out which methods perform best and also include several examples where camera-based TTC estimation is way off. 
+As with Lidar, describe your observations again and also look into potential reasons.
+
+The task is complete once all detector / descriptor combinations implemented in previous chapters have been compared with regard to the TTC estimate on a frame-by-frame basis. To facilitate the comparison, a spreadsheet and graph should be used to represent the different TTCs.
+
+### Notes on Performance Evaluation
+
+The spreadsheet with all results is in the [FP6_performance_results.xlsx spreadsheet](results/FP6_performance_results.xlsx).
+
+
+
+### Examples of detector/descriptor combinations that perform best
+
+The following graph shows a selection of 9 detector/descriptor combinations for camera-based TTC estimation. The Lidar-based TTC estimate is shown in blue for comparison. 
+
+![](results/images/TTC_Comparison_Charts/Compare_multiple.png)
+
+Even among these better-performing camera-based detector/descriptor combinations, several of them diverge significantly from the Lidar-based TTC around frames 4-5, and again around frames 9 and 12.
+
+
+The following 3 graphs show a selection of the best-performing detector/descriptor combinations for camera-based TTC estimation.
+
+![](results/images/TTC_Comparison_Charts/SIFT_SIFT.png)
+
+![](results/images/TTC_Comparison_Charts/SIFT_BRIEF.png)
+
+![](results/images/TTC_Comparison_Charts/AKAZE_BRISK.png)
+
+
+### Examples of detector/descriptor combinations where camera-based TTC estimation is way off
+
+![](results/images/TTC_Comparison_Charts/Compare_multiple_with_outliers.png)
+
+The following 3 graphs show a selection of the worst-performing detector/descriptor combinations for camera-based TTC estimation, where the camera-based TTC is way off.
+
+![](results/images/TTC_Comparison_Charts/ShiTomasi_BRISK.png)
+
+![](results/images/TTC_Comparison_Charts/HARRIS_BRISK.png)
+
+![](results/images/TTC_Comparison_Charts/ORB_BRISK.png)
+
+There are examples where the camera-based TTC is way off only for certain frames, but not for others. The following graphs show a selection of these detector/descriptor combinations. Although the camera-based TTC eventually aligns with the Lidar-based TTC in later frames, they are too inconsistent to be reliable.  
+
+![](results/images/TTC_Comparison_Charts/ORB_SIFT.png)
+
+![](results/images/TTC_Comparison_Charts/FAST_SIFT.png)
+
 
 # Building and Running the Project
 
@@ -473,7 +521,9 @@ Again, these tables and graphs are in [the results spreadheet](results/results.x
   * Linux: gcc / g++ is installed by default on most Linux distros
   * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
   * Windows: recommend using [MinGW](http://www.mingw.org/)
-  
+* Boost >= 1.75.0
+  * The Boost C++ Libraries can be found [here](https://www.boost.org/)
+
 ## Basic Build Instructions
 
 1. Clone this repo.
