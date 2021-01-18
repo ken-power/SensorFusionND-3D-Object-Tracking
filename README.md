@@ -322,7 +322,7 @@ One immediate factor that is evident from the camera images is the vehicles are 
 ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_1.png)
 
 #### Observation 2: Sort the lidar points
-The first implementation of `computeTTCLidar` did not sort the lidar points. This resulted in the majority of Lidar TTC estaimtes looking way off. These results can be seen in the following table.  
+The first implementation of `computeTTCLidar` did not sort the lidar points. This resulted in the majority of Lidar TTC estimates looking way off. These results can be seen in the following table.  
 
 ##### Before sorting the lidar points
 
@@ -373,7 +373,7 @@ The following table shows a set of manual calculations, based on an estimate of 
 
 ![](results/Lidar_TTC_Manual_Calculations.png)
 
-The calculations are in the [results spreadsheet](results/results.xlsx). The top view perspectives of the Lidar points for each frame are shown below, and in the [Image Results markdown file](ImageResults.md). These are used to estimate the distance to the preceding vehicle in each frame.
+The calculations are in the [results spreadsheet](results/FP5_performance_results.xlsx). The top view perspectives of the Lidar points for each frame are shown below, and in the [image in the lidar_top_view folder](results/images/lidar_top_view). These are used to estimate the distance to the preceding vehicle in each frame.
 
 A graph of `v0` shows the velocity per frame:
 
@@ -453,7 +453,7 @@ Now, when we graph `v0` the graph shows that velocity is steadily increasing. Th
 
 ![](results/v0_calculated_from_TTC.png)
 
-Again, these tables and graphs are in [the results spreadheet](results/results.xlsx).
+Again, these tables and graphs are in [the FP5 results spreadsheet](results/FP5_performance_results.xlsx).
 
 ## Performance Evaluation 2
 
@@ -537,12 +537,7 @@ Although the camera-based TTC eventually aligns with the Lidar-based TTC in late
 
 ## Notes on the Code
 
-* The file [MidTermProject_Camera_Student.cpp](src/MidTermProject_Camera_Student.cpp) contains the `main()` function, and is the starting point for the program.
-* The file [dataStructures.h](src/dataStructures.h) contains data structures used throughout the proejct code, including `DataFrame`, `KeypointDetector`, and `Hyperparameters`.
-* The files [matching2D.hpp](src/matching2D.hpp) and [matching2D_Student.cpp](src/matching2D_Student.cpp) define the functions that perform keypoint detection and matching.
-* The files [](src/reporting.h) and [](src/reporting.cpp) define structures and functions used to auto-generate the results in markdown format. I use these to easily generate all the performance evaluation tables, and then insert them into this README document, and into the [results spreadsheet](results/results.xlsx).
-
-### The `main()` funciton
+### The `main()` function
 
 Rather than re-run the program manually for each detector-descriptor pair, and then manually gather the results from the console, I run the program once for all detector-descriptor pairs. The project is structured around the model of an `Experiment`. Each `Experiment` runs one detector-descriptor pair, and gathers the results. The `main()` function invokes a function called `RunExperimentSet`, which runs a set of experiments - one for each valid detector-descriptor combination.
 
@@ -639,7 +634,7 @@ void RunExperiment(Experiment &experiment)
 
 ```
 
-An `Experiment` uses the `Hyperparameters` described earlier, and stores the results. It also has some configuration options that can be set via the `Experiment` struct in [reporting.h](src/reporting.h):
+An `Experiment` uses the `Hyperparameters` described earlier, and stores the results. It also has some configuration options that can be set via the `Experiment` struct in [dataStructures.h](src/dataStructures.h):
 
 ```c++
 struct Experiment
@@ -656,7 +651,7 @@ struct Experiment
 };
 ```
 
-The confiuration shown above means that the image windows are not displayed when running the program. This allows a set of experiments to run quickly without needing any human intervention. If you want to see the images during an experiment run, then set the `displayImageWindows` variable to `true`:
+The configuration shown above means that the image windows are not displayed when running the program. This allows a set of experiments to run quickly without needing any human intervention. If you want to see the images during an experiment run, then set the `displayImageWindows` variable to `true`:
 ```c++
 struct Experiment
 {
@@ -665,7 +660,6 @@ struct Experiment
 ...
 };
 ```
-
 
 # References
 * Rangesh, A. and Trivedi, M.M., 2019. [_No blind spots: Full-surround multi-object tracking for autonomous vehicles using cameras and lidars_](https://arxiv.org/pdf/1802.08755). IEEE Transactions on Intelligent Vehicles, 4(4), pp.588-599.
@@ -676,4 +670,13 @@ struct Experiment
 * StackOverflow. [_How to link C++ program with Boost using CMake_](https://stackoverflow.com/questions/3897839/how-to-link-c-program-with-boost-using-cmake).
 
 # Additional Project Files
-This repository contains the following additional files:
+This repository contains the following additional files and folders:
+
+* [3DObjectTracking_Results.xlsx](results/FP5_performance_results.xlsx): A spreadsheet used to analyse the data and create the charts for FP5 performance analysis. 
+* [FP6_performance_results.csv](results/FP6_performance_results.csv): A CSV file with all the raw data for FP6 performance analysis.
+* [FP6_performance_results.xlsx](results/FP6_performance_results.xlsx): A spreadsheet used to analyse the data and create the charts for FP6 performance analysis.
+* [output_perf_tables.md](output_perf_tables.md): A markdown file with a data tables and output images from all 35 experiments.
+* [output_perf_recommended.md](output_perf_recommended.md): A markdown file showing a log trace of running the program with detailed logging turned on. Useful for debugging.
+* [TTC_Comparison_Charts](results/images/TTC_Comparison_Charts): A folder containing a set of images exported from the analysis spreadsheets
+* [Combined Lidar and Camera TTC images](results/images/lidar_camera_ttc_combined): A set of images created by this program. There is an image for each detector/descriptor pair showing TTC estimates from camera and lidar for each frame.
+* [Lidar top view perspective images](results/images/lidar_top_view): A set of images created by this program. Each image shows the Lidar top view perspective, with distance markers, number of Lidar points, distance to preceding vehicle, and width of preceding vehicle. 
