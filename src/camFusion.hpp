@@ -39,7 +39,7 @@ void computeTTCCamera(std::vector<cv::KeyPoint> & kptsPrev, std::vector<cv::KeyP
 void computeTTCLidar(std::vector<LidarPoint> & lidarPointsPreviousFrame,
                      std::vector<LidarPoint> & lidarPointsCurrentFrame, double frameRate, double & TTC);
 
-const string GetTtcFilename(const string detector, const string descriptor, const int frame);
-const string GetLidarFilename(const string detector, const string descriptor, const int frame);
+const string GetTtcFilename(const string & detector, const string & descriptor, const int frame);
+const string GetLidarFilename(const string & detector, const string & descriptor, const int frame);
 
 #endif /* camFusion_hpp */

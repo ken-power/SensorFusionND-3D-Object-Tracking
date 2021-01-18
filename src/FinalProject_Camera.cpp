@@ -1,18 +1,11 @@
-
-/* INCLUDES FOR THIS PROJECT */
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <iomanip>
 #include <vector>
 #include <cmath>
-#include <limits>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d.hpp>
-#include <opencv2/xfeatures2d.hpp>
-#include <opencv2/xfeatures2d/nonfree.hpp>
 
 #include <boost/circular_buffer.hpp>
 
@@ -38,7 +31,7 @@ void PrintResultLineDetails(ResultLineItem lineItem);
 
 void PrintExperimentDetails(Experiment & experiment);
 
-void WriteToCSVFile(const vector<ResultSet> resultSet, ofstream & file);
+void WriteToCSVFile(const vector<ResultSet> & resultSet, ofstream & file);
 
 const bool ENABLE_DETAILED_DEBUG = false;
 
@@ -94,7 +87,7 @@ int main()
     return 0;
 }
 
-void WriteToCSVFile(const vector<ResultSet> resultSet, ofstream & file)
+void WriteToCSVFile(const vector<ResultSet> & resultSet, ofstream & file)
 {
     cout << "WRITING CSV FILE" << endl;
 
@@ -137,7 +130,6 @@ vector<Experiment> RunExperimentSet(Hyperparameters hyperparameters,
             experiment.hyperparameters = hyperparameters;
             experiment.hyperparameters.keypointDetector = detector;
             experiment.hyperparameters.descriptor = descriptor;
-
 
             // There are some combinations of detector and descriptor that do not work together:
             if(descriptor == "AKAZE")
@@ -321,7 +313,6 @@ void RunExperiment(Experiment & experiment)
 
         cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
 
-
         /* CROP LIDAR POINTS */
 
         // load 3D Lidar points from file
@@ -337,7 +328,6 @@ void RunExperiment(Experiment & experiment)
         (dataBuffer.end() - 1)->lidarPoints = lidarPoints;
 
         cout << "#3 : CROP LIDAR POINTS done" << endl;
-
 
         /* CLUSTER LIDAR POINT CLOUD */
 
@@ -442,7 +432,6 @@ void RunExperiment(Experiment & experiment)
 
         cout << "#5 : DETECT KEYPOINTS done" << endl;
 
-
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
         cv::Mat descriptors;
@@ -461,9 +450,7 @@ void RunExperiment(Experiment & experiment)
 
         if(dataBuffer.size() > 1) // wait until at least two images have been processed
         {
-
             /* MATCH KEYPOINT DESCRIPTORS */
-
             vector<cv::DMatch> matches;
 
             try

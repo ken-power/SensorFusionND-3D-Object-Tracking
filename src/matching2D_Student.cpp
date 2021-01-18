@@ -380,18 +380,17 @@ void visualizeKeypoints(const vector<cv::KeyPoint> & keypoints,
             std::cerr << "Image write exception: " << ex.what() << std::endl;
         }
     }
-
 }
 
 
-const string GetTtcFilename(const string detector, const string descriptor, const int frame)
+string GetTtcFilename(const string & detector, const string & descriptor, const int frame)
 {
     return "results/images/lidar_camera_ttc_combined/ttc_lidar_camera_" + detector + "_" + descriptor +
            +"_" + to_string(frame) + ".png";
 }
 
 
-const string GetLidarFilename(const string detector, const string descriptor, const int frame)
+string GetLidarFilename(const string & detector, const string & descriptor, const int frame)
 {
     return "results/images/lidar_top_view/lidar_" + detector + "_" + descriptor +
            +"_" + to_string(frame) + ".png";
