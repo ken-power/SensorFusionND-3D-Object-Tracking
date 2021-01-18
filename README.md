@@ -478,7 +478,7 @@ The following graph shows a selection of 9 detector/descriptor combinations for 
 Even among these better-performing camera-based detector/descriptor combinations, several of them diverge significantly from the Lidar-based TTC around frames 4-5, and again around frames 9 and 12.
 
 
-The following 3 graphs show a selection of the best-performing detector/descriptor combinations for camera-based TTC estimation.
+The following graphs show a selection of the best-performing detector/descriptor combinations for camera-based TTC estimation.
 
 ![](results/images/TTC_Comparison_Charts/SIFT_SIFT.png)
 
@@ -486,10 +486,17 @@ The following 3 graphs show a selection of the best-performing detector/descript
 
 ![](results/images/TTC_Comparison_Charts/AKAZE_BRISK.png)
 
+![](results/images/TTC_Comparison_Charts/BRISK_ORB.png)
+
+![](results/images/TTC_Comparison_Charts/AKAZE_AKAZE.png)
+
+
 
 ### Examples of detector/descriptor combinations where camera-based TTC estimation is way off
 
 ![](results/images/TTC_Comparison_Charts/Compare_multiple_with_outliers.png)
+
+In general, the HARRIS and ORB keypoint detectors resulted in very poor camera-based TTC estimates.
 
 The following 3 graphs show a selection of the worst-performing detector/descriptor combinations for camera-based TTC estimation, where the camera-based TTC is way off.
 
@@ -499,13 +506,23 @@ The following 3 graphs show a selection of the worst-performing detector/descrip
 
 ![](results/images/TTC_Comparison_Charts/ORB_BRISK.png)
 
-There are examples where the camera-based TTC is way off only for certain frames, but not for others. The following graphs show a selection of these detector/descriptor combinations.   
+There are examples where the camera-based TTC is off only for certain frames, but not for others. The following graphs show a selection of these detector/descriptor combinations.   
+
+![](results/images/TTC_Comparison_Charts/FAST_BRISK.png)
 
 ![](results/images/TTC_Comparison_Charts/ORB_SIFT.png)
 
 ![](results/images/TTC_Comparison_Charts/FAST_SIFT.png)
 
 Although the camera-based TTC eventually aligns with the Lidar-based TTC in later frames, they are too inconsistent to be reliable.
+
+
+According to Altendorfer, R. and Wilkmann (2017): (see [references](#References) below):
+
+> "_There is currently no satisfying way to compute an automotive collision probability over a time period: there is a heuristic proposal to pick the maximal collision probability over that period as the collision probability for that time period [Jansson, et al. 2008], and there are calculations relying on strong assumptions (e. g. constant velocity models) that directly compute the collision probability over a time period [Nordlund et al, 2008]._"
+
+As noted earlier, the TTC calculations in this project use the constant-velocity model as opposed to a constant-acceleration model. In a real road traffic scenario both the measuring vehicle and the preceding vehicle accelerate an decelerate non-uniformly, and this affects the accuracy of TTC calculations.
+
 
 # Building and Running the Project
 
@@ -666,8 +683,12 @@ struct Experiment
 * Kilicarslan, M. and Zheng, J.Y., 2018. [_Predict vehicle collision by TTC from motion using a single video camera_](https://ieeexplore.ieee.org/abstract/document/8360483). IEEE Transactions on Intelligent Transportation Systems, 20(2), pp.522-533.
 * Huang, J.K. and Grizzle, J.W., 2019. [_Improvements to Target-Based 3D LiDAR to Camera Calibration_](https://arxiv.org/pdf/1910.03126.pdf). arXiv preprint arXiv:1910.03126.
 * Raphael, E., Kiefer, R., Reisman, P. and Hayon, G., 2011. _Development of a camera-based forward collision alert system_. SAE International Journal of Passenger Cars-Mechanical Systems, 4(2011-01-0579), pp.467-478.
+* Altendorfer, R. and Wilkmann, C., 2017. [_A New Approach To Estimate The Collision Probability For Automotive Applications_](https://arxiv.org/pdf/1711.07060.pdf). arXiv preprint arXiv:1711.07060.
+* Jansson, J. and Gustafsson, F., 2008. [_A framework and automotive application of collision avoidance decision making_](https://www.sciencedirect.com/science/article/abs/pii/S0005109808000617). Automatica, 44(9), pp.2347-2351.
+* Nordlund, P.J. and Gustafsson, F., 2008. [_Probabilistic conflict detection for piecewise straight paths_](https://www.diva-portal.org/smash/get/diva2:316987/FULLTEXT01.pdf). Linköping University Electronic Press.  
 * Jan Gaspar. [_Chapter 7. Boost.Circular Buffer_](https://www.boost.org/doc/libs/1_61_0/doc/html/circular_buffer.html). [Boost C++ Libraries](https://www.boost.org/).
 * StackOverflow. [_How to link C++ program with Boost using CMake_](https://stackoverflow.com/questions/3897839/how-to-link-c-program-with-boost-using-cmake).
+
 
 # Additional Project Files
 This repository contains the following additional files and folders:
