@@ -316,7 +316,7 @@ The task is complete once several examples (2-3) have been identified and descri
 #### Observation 1: Traffic light is red
 One immediate factor that is evident from the camera images is the vehicles are facing a red light, which means the preceding vehicles are likely either already stopped at the red light, or slowing to a stop as they approach the red light. Hence, TTC should not be very large, and we should look out for large TTC estimates. 
 
-![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_1.png)
+![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_1.png)
 
 #### Observation 2: Sort the lidar points
 The first implementation of `computeTTCLidar` did not sort the lidar points. This resulted in the majority of Lidar TTC estaimtes looking way off. These results can be seen in the following table.  
@@ -348,12 +348,12 @@ The following table shows the Lidar TTC estimates side-by-side with the Lidar to
 
 Frame | Top view perspective of Lidar points showing distance markers | Image with TTC estimates from Lidar and Camera | Lidar points | TTC Lidar | TTC Camera
 :---:  | :---:  | :---:  | ---:  | ---:  | ---: 
-2 | ![](results/images/lidar_top_view/image_2.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_2.png) | 309 | 46.9361 | 12.7634
-4 | ![](results/images/lidar_top_view/image_4.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_4.png) | 322 | 13.9876 | 13.81
-6 | ![](results/images/lidar_top_view/image_6.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_6.png) | 352 | 15.5119 | 11.426
-7 | ![](results/images/lidar_top_view/image_7.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_7.png) | 317 | 40.7209 | 12.8408
-11 | ![](results/images/lidar_top_view/image_11.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_11.png) | 302 | -43.923 | 12.7762
-17 | ![](results/images/lidar_top_view/image_17.png) | ![](results/images/lidar_camera_ttc_combined/ttc_SHITOMASI_BRISK_image_17.png) | 279 | 702.551 | 10.0052
+2 | ![](results/images/lidar_top_view/lidar_Shi_Tomasi_BRISK_2.png) | ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_2.png) | 309 | 46.9361 | 12.7634
+4 | ![](results/images/lidar_top_view/lidar_Shi_Tomasi_BRISK_4.png) | ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_4.png) | 322 | 13.9876 | 13.81
+6 | ![](results/images/lidar_top_view/lidar_Shi_Tomasi_BRISK_6.png) | ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_6.png) | 352 | 15.5119 | 11.426
+7 | ![](results/images/lidar_top_view/lidar_Shi_Tomasi_BRISK_7.png) | ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_7.png) | 317 | 40.7209 | 12.8408
+11 | ![](results/images/lidar_top_view/lidar_Shi_Tomasi_BRISK_11.png) | ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_11.png) | 302 | -43.923 | 12.7762
+17 | ![](results/images/lidar_top_view/lidar_Shi_Tomasi_BRISK_17.png) | ![](results/images/lidar_camera_ttc_combined/ttc_lidar_camera_Shi_Tomasi_BRISK_17.png) | 279 | 702.551 | 10.0052
 
 
 The Lidar sensor in the following scenario (image courtesy of Udacity) gives the distance to the closest 3D point in the path of driving. In the figure below, the closest point is indicated by a red line emanating from a Lidar sensor on top of the measuring vehicle.
@@ -496,12 +496,13 @@ The following 3 graphs show a selection of the worst-performing detector/descrip
 
 ![](results/images/TTC_Comparison_Charts/ORB_BRISK.png)
 
-There are examples where the camera-based TTC is way off only for certain frames, but not for others. The following graphs show a selection of these detector/descriptor combinations. Although the camera-based TTC eventually aligns with the Lidar-based TTC in later frames, they are too inconsistent to be reliable.  
+There are examples where the camera-based TTC is way off only for certain frames, but not for others. The following graphs show a selection of these detector/descriptor combinations.   
 
 ![](results/images/TTC_Comparison_Charts/ORB_SIFT.png)
 
 ![](results/images/TTC_Comparison_Charts/FAST_SIFT.png)
 
+Although the camera-based TTC eventually aligns with the Lidar-based TTC in later frames, they are too inconsistent to be reliable.
 
 # Building and Running the Project
 
