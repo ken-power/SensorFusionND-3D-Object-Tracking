@@ -686,9 +686,11 @@ struct Experiment
 * Altendorfer, R. and Wilkmann, C., 2017. [_A New Approach To Estimate The Collision Probability For Automotive Applications_](https://arxiv.org/pdf/1711.07060.pdf). arXiv preprint arXiv:1711.07060.
 * Jansson, J. and Gustafsson, F., 2008. [_A framework and automotive application of collision avoidance decision making_](https://www.sciencedirect.com/science/article/abs/pii/S0005109808000617). Automatica, 44(9), pp.2347-2351.
 * Nordlund, P.J. and Gustafsson, F., 2008. [_Probabilistic conflict detection for piecewise straight paths_](https://www.diva-portal.org/smash/get/diva2:316987/FULLTEXT01.pdf). Linköping University Electronic Press.  
+* Jiang, B., You, S. and Neumann, U., 2000, July. [_Camera tracking for augmented reality media_](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.130.9199&rep=rep1&type=pdf). In 2000 IEEE International Conference on Multimedia and Expo. ICME2000. Proceedings. Latest Advances in the Fast Changing World of Multimedia (Cat. No. 00TH8532) (Vol. 3, pp. 1637-1640). IEEE.
+* IntoRobotics, April 1, 2013 (Updated November 25 2016) [_How to Detect and Track Object With OpenCV_](https://www.intorobotics.com/how-to-detect-and-track-object-with-opencv/).
+* Jeremy Behreandt, 2018. [_Cameras in Processing (2D and 3D)_](https://behreajj.medium.com/cameras-in-processing-2d-and-3d-dc45fd03662c). Medium.
 * Jan Gaspar. [_Chapter 7. Boost.Circular Buffer_](https://www.boost.org/doc/libs/1_61_0/doc/html/circular_buffer.html). [Boost C++ Libraries](https://www.boost.org/).
 * StackOverflow. [_How to link C++ program with Boost using CMake_](https://stackoverflow.com/questions/3897839/how-to-link-c-program-with-boost-using-cmake).
-
 
 # Additional Project Files
 This repository contains the following additional files and folders:
