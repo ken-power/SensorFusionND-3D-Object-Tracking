@@ -461,7 +461,7 @@ This performance evaluation is about running the different detector / descriptor
 The goal is to find out which methods perform best and also include several examples where camera-based TTC estimation is way off. 
 As with Lidar, describe your observations again and also look into potential reasons.
 
-The task is complete once all detector / descriptor combinations implemented in previous chapters have been compared with regard to the TTC estimate on a frame-by-frame basis. To facilitate the comparison, a spreadsheet and graph should be used to represent the different TTCs.
+The task is complete once all detector / descriptor combinations implemented in previous chapters have been compared with regard to the TTC estimate on a frame-by-frame basis. To facilitate the comparison, a spreadsheet and graphs are used to represent the different TTCs.
 
 ### Notes on Performance Evaluation
 
@@ -521,7 +521,7 @@ According to Altendorfer, R. and Wilkmann (2017): (see [references](#References)
 
 > "_There is currently no satisfying way to compute an automotive collision probability over a time period: there is a heuristic proposal to pick the maximal collision probability over that period as the collision probability for that time period [Jansson, et al. 2008], and there are calculations relying on strong assumptions (e. g. constant velocity models) that directly compute the collision probability over a time period [Nordlund et al, 2008]._"
 
-As noted earlier, the TTC calculations in this project use the constant-velocity model as opposed to a constant-acceleration model. In a real road traffic scenario both the measuring vehicle and the preceding vehicle accelerate an decelerate non-uniformly, and this affects the accuracy of TTC calculations.
+As noted earlier, the TTC calculations in this project use the constant-velocity model as opposed to a constant-acceleration model. In a real road traffic scenario both the measuring vehicle and the preceding vehicle accelerate and decelerate non-uniformly, and this affects the accuracy of TTC calculations.
 
 
 # Building and Running the Project
